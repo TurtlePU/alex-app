@@ -6,6 +6,7 @@ import com.google.firebase.database.ktx.getValue
 import com.google.firebase.database.ktx.snapshots
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.tasks.await
 
 data class Performance(val name: String)
 
@@ -23,10 +24,10 @@ object PerformanceRepo {
     }
 
   suspend fun rate(index: Int, userID: String, rating: Double) {
-    TODO()
+    performances.child("$index/ratings/$userID").setValue(rating).await()
   }
 
   suspend fun comment(index: Int, userID: String, comment: String) {
-    TODO()
+    performances.child("$index/comments/$userID").setValue(comment).await()
   }
 }
