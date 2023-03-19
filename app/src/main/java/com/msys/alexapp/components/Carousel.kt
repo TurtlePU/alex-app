@@ -6,18 +6,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
-import com.msys.alexapp.services.*
+import com.msys.alexapp.services.Performance
+import com.msys.alexapp.services.PerformanceRepo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
 @Composable
 fun Carousel(userID: String) {
-  val pageCount by performanceCountFlow.collectAsState(initial = 0)
+  val pageCount by PerformanceRepo.countFlow.collectAsState(initial = 0)
   PerformancePager(
     pageCount = pageCount,
-    performances = ::performanceFlow,
-    rate = { index, rating -> rate(index, userID, rating) },
-    comment = { index, comment -> comment(index, userID, comment) }
+    performances = { PerformanceRepo[it] },
+    rate = { index, rating -> PerformanceRepo.rate(index, userID, rating) },
+    comment = { index, comment -> PerformanceRepo.comment(index, userID, comment) }
   )
 }
 
