@@ -48,7 +48,17 @@ fun PerformancePage(
 @Preview(showBackground = true)
 @Composable
 fun PerformancePagerPreview() {
-  val examples = listOf(Performance("Android"))
+  val examples = listOf(
+    Performance(
+      0,
+      "Android",
+      "New York",
+      "II",
+      "Sing Along",
+      13,
+      "song"
+    )
+  )
   PerformancePager(
     pageCount = examples.size,
     performances = { flowOf(examples[it]) },
