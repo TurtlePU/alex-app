@@ -1,15 +1,22 @@
 package com.msys.alexapp.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.msys.alexapp.services.Performance
 import com.msys.alexapp.services.PerformanceRepo
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun Carousel(userID: String) {
@@ -30,7 +37,10 @@ fun PerformancePager(
   rate: suspend (Int, Double) -> Unit,
   comment: suspend (Int, String) -> Unit
 ) {
-  HorizontalPager(pageCount = pageCount) { index ->
+  HorizontalPager(
+    pageCount = pageCount,
+    verticalAlignment = Alignment.Top,
+  ) { index ->
     val performance by performances(index).collectAsState(initial = null)
     PerformancePage(performance, { rate(index, it) }, { comment(index, it) })
   }
@@ -39,26 +49,100 @@ fun PerformancePager(
 @Composable
 fun PerformancePage(
   performance: Performance?,
-  rate: suspend (Double) -> Unit,
-  comment: suspend (String) -> Unit
+  sendRating: suspend (Double) -> Unit,
+  sendComment: suspend (String) -> Unit,
 ) {
-  TODO("Not yet implemented")
+  var rating: Double? by rememberSaveable { mutableStateOf(null) }
+  var comment: String? by rememberSaveable { mutableStateOf(null) }
+  LaunchedEffect(true) {
+    while (true) {
+      delay(5.seconds)
+      rating?.let { sendRating(it) }
+      comment?.let { sendComment(it) }
+    }
+  }
+  if (performance != null) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+      performance.View()
+      RatingPad(rating) { rating = it }
+      TextField(
+        value = comment ?: "",
+        onValueChange = { comment = it },
+        modifier = Modifier.fillMaxWidth()
+      )
+    }
+  }
+}
+
+@Composable
+fun RatingPad(rating: Double?, setRating: (Double) -> Unit) {
+  Row {
+    for (i in 5..9) {
+      RatingButton(i.toDouble(), rating, setRating)
+    }
+  }
+  Row {
+    for (i in 5..9) {
+      RatingButton(i + 0.5, rating, setRating)
+    }
+  }
+  RatingButton(10.0, rating, setRating, Modifier.fillMaxWidth())
+}
+
+@Composable
+fun RatingButton(
+  newRating: Double,
+  oldRating: Double?,
+  rate: (Double) -> Unit,
+  modifier: Modifier = Modifier
+) {
+  Button(
+    onClick = { rate(newRating) },
+    modifier = modifier,
+    enabled = newRating != oldRating,
+  ) {
+    Text(text = newRating.toString())
+  }
+}
+
+@Composable
+fun Performance.View() {
+  Row(verticalAlignment = Alignment.Top) {
+    Text(text = category)
+    Column {
+      Text(text = nomination.firstWord)
+      Text(text = age.toString())
+    }
+    Column {
+      Text(text = "$name (#$id)")
+      Text(text = performance)
+    }
+    Text(text = city)
+  }
+}
+
+val String.firstWord: String get() = this.trim().split(' ').first()
+
+private val example = Performance(
+  0,
+  "Android",
+  "New York",
+  "II",
+  "Sing Along",
+  13,
+  "song"
+)
+
+@Preview(showBackground = true)
+@Composable
+fun PerformancePagePreview() {
+  PerformancePage(performance = example, sendRating = {}, sendComment = {})
 }
 
 @Preview(showBackground = true)
 @Composable
 fun PerformancePagerPreview() {
-  val examples = listOf(
-    Performance(
-      0,
-      "Android",
-      "New York",
-      "II",
-      "Sing Along",
-      13,
-      "song"
-    )
-  )
+  val examples = listOf(example)
   PerformancePager(
     pageCount = examples.size,
     performances = { flowOf(examples[it]) },
