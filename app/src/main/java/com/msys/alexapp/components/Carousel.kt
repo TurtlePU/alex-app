@@ -1,18 +1,21 @@
 package com.msys.alexapp.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.msys.alexapp.services.Performance
 import com.msys.alexapp.services.PerformanceRepo
+import com.msys.alexapp.ui.theme.AlexAppTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -62,13 +65,19 @@ fun PerformancePage(
     }
   }
   if (performance != null) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(
+      modifier = Modifier.fillMaxSize(),
+      verticalArrangement = Arrangement.SpaceEvenly,
+    ) {
       performance.View()
       RatingPad(rating) { rating = it }
       TextField(
         value = comment ?: "",
         onValueChange = { comment = it },
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+          .padding(vertical = 5.dp)
+          .fillMaxWidth(),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
       )
     }
   }
@@ -76,17 +85,28 @@ fun PerformancePage(
 
 @Composable
 fun RatingPad(rating: Double?, setRating: (Double) -> Unit) {
-  Row {
+  Row(
+    modifier = Modifier.fillMaxWidth(),
+    horizontalArrangement = Arrangement.SpaceEvenly,
+  ) {
     for (i in 5..9) {
       RatingButton(i.toDouble(), rating, setRating)
     }
   }
-  Row {
+  Row(
+    modifier = Modifier.fillMaxWidth(),
+    horizontalArrangement = Arrangement.SpaceEvenly,
+  ) {
     for (i in 5..9) {
       RatingButton(i + 0.5, rating, setRating)
     }
   }
-  RatingButton(10.0, rating, setRating, Modifier.fillMaxWidth())
+  RatingButton(
+    10.0, rating, setRating,
+    Modifier
+      .fillMaxWidth()
+      .padding(5.dp)
+  )
 }
 
 @Composable
@@ -151,7 +171,9 @@ private val example = Performance(
 @Preview(showBackground = true)
 @Composable
 fun PerformancePagePreview() {
-  PerformancePage(performance = example, sendRating = {}, sendComment = {})
+  AlexAppTheme {
+    PerformancePage(performance = example, sendRating = {}, sendComment = {})
+  }
 }
 
 @Preview(showBackground = true)
