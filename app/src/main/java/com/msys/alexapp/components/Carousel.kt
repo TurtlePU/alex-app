@@ -24,38 +24,41 @@ import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun Carousel(userID: String) {
-  val pageCount by PerformanceRepo.countFlow.collectAsState(initial = 0)
+  val pageKeys by PerformanceRepo.listFlow.collectAsState(initial = listOf())
   PerformancePager(
-    pageCount = pageCount,
+    pageKeys = pageKeys,
     performances = { PerformanceRepo[it] },
     ratings = { PerformanceRepo.getRating(it, userID) },
     comments = { PerformanceRepo.getComment(it, userID) },
-    rate = { index, rating -> PerformanceRepo.rate(index, userID, rating) },
-    comment = { index, comment -> PerformanceRepo.comment(index, userID, comment) }
+    rate = { performanceID, rating -> PerformanceRepo.rate(performanceID, userID, rating) },
+    comment = { performanceID, comment -> PerformanceRepo.comment(performanceID, userID, comment) },
   )
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PerformancePager(
-  pageCount: Int,
-  performances: (Int) -> Flow<Performance>,
-  ratings: (Int) -> Flow<Double?>,
-  comments: (Int) -> Flow<String?>,
-  rate: suspend (Int, Double) -> Unit,
-  comment: suspend (Int, String) -> Unit
+  pageKeys: List<String>,
+  performances: (String) -> Flow<Performance>,
+  ratings: (String) -> Flow<Double?>,
+  comments: (String) -> Flow<String?>,
+  rate: suspend (String, Double) -> Unit,
+  comment: suspend (String, String) -> Unit,
 ) {
   HorizontalPager(
-    pageCount = pageCount,
+    pageCount = pageKeys.size,
     verticalAlignment = Alignment.Top,
+    key = { pageKeys[it] },
   ) { index ->
-    val performance by performances(index).collectAsState(initial = null)
+    val id = pageKeys[index]
+    val performance by performances(id).collectAsState(initial = null)
     PerformancePage(
       performance,
-      ratings(index),
-      comments(index),
-      { rate(index, it) },
-      { comment(index, it) })
+      ratings(id),
+      comments(id),
+      { rate(id, it) },
+      { comment(id, it) },
+    )
   }
 }
 
@@ -179,7 +182,7 @@ fun Performance.View() {
 val String.firstWord: String get() = this.trim().split(' ').first()
 
 private val example = Performance(
-  0,
+  "0",
   "Android",
   "New York",
   "II",
@@ -204,10 +207,10 @@ fun PerformancePagePreview() {
 @Preview(showBackground = true)
 @Composable
 fun PerformancePagerPreview() {
-  val examples = listOf(example)
+  val examples = mapOf(example.id to example)
   PerformancePager(
-    pageCount = examples.size,
-    performances = { flowOf(examples[it]) },
+    pageKeys = examples.keys.toList(),
+    performances = { flowOf(examples[it]!!) },
     ratings = { emptyFlow() },
     comments = { emptyFlow() },
     rate = { _, _ -> },
