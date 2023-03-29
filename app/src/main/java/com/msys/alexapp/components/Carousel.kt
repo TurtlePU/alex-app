@@ -18,6 +18,7 @@ import com.msys.alexapp.services.PerformanceRepo
 import com.msys.alexapp.ui.theme.AlexAppTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlin.time.Duration.Companion.seconds
 
@@ -27,6 +28,8 @@ fun Carousel(userID: String) {
   PerformancePager(
     pageCount = pageCount,
     performances = { PerformanceRepo[it] },
+    ratings = { PerformanceRepo.getRating(it, userID) },
+    comments = { PerformanceRepo.getComment(it, userID) },
     rate = { index, rating -> PerformanceRepo.rate(index, userID, rating) },
     comment = { index, comment -> PerformanceRepo.comment(index, userID, comment) }
   )
@@ -37,6 +40,8 @@ fun Carousel(userID: String) {
 fun PerformancePager(
   pageCount: Int,
   performances: (Int) -> Flow<Performance>,
+  ratings: (Int) -> Flow<Double?>,
+  comments: (Int) -> Flow<String?>,
   rate: suspend (Int, Double) -> Unit,
   comment: suspend (Int, String) -> Unit
 ) {
@@ -45,18 +50,33 @@ fun PerformancePager(
     verticalAlignment = Alignment.Top,
   ) { index ->
     val performance by performances(index).collectAsState(initial = null)
-    PerformancePage(performance, { rate(index, it) }, { comment(index, it) })
+    PerformancePage(
+      performance,
+      ratings(index),
+      comments(index),
+      { rate(index, it) },
+      { comment(index, it) })
   }
 }
 
 @Composable
 fun PerformancePage(
   performance: Performance?,
+  rateFlow: Flow<Double?>,
+  commentFlow: Flow<String?>,
   sendRating: suspend (Double) -> Unit,
   sendComment: suspend (String) -> Unit,
 ) {
   var rating: Double? by rememberSaveable { mutableStateOf(null) }
+  if (rating == null) {
+    val oldRating: Double? by rateFlow.collectAsState(initial = null)
+    rating = oldRating
+  }
   var comment: String? by rememberSaveable { mutableStateOf(null) }
+  if (comment == null) {
+    val oldComment: String? by commentFlow.collectAsState(initial = null)
+    comment = oldComment
+  }
   LaunchedEffect(true) {
     while (true) {
       delay(5.seconds)
@@ -172,7 +192,12 @@ private val example = Performance(
 @Composable
 fun PerformancePagePreview() {
   AlexAppTheme {
-    PerformancePage(performance = example, sendRating = {}, sendComment = {})
+    PerformancePage(
+      performance = example,
+      rateFlow = emptyFlow(),
+      commentFlow = emptyFlow(),
+      sendRating = {},
+      sendComment = {})
   }
 }
 
@@ -183,6 +208,8 @@ fun PerformancePagerPreview() {
   PerformancePager(
     pageCount = examples.size,
     performances = { flowOf(examples[it]) },
+    ratings = { emptyFlow() },
+    comments = { emptyFlow() },
     rate = { _, _ -> },
     comment = { _, _ -> },
   )

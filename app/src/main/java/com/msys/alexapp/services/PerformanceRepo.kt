@@ -23,28 +23,41 @@ object PerformanceRepo {
   private val performances: DatabaseReference =
     FirebaseDatabase.getInstance().getReference("performances")
 
+  private fun child(index: Int): DatabaseReference = performances.child(index.toString())
+
+  private fun rating(index: Int, userID: String): DatabaseReference =
+    child(index).child("ratings/$userID")
+
+  private fun comment(index: Int, userID: String): DatabaseReference =
+    child(index).child("comments/$userID")
+
   private operator fun DataSnapshot.get(key: String): String? = child(key).getValue<String>()
 
   val countFlow: Flow<Int> = performances.snapshots.map { it.childrenCount.toInt() }
 
-  operator fun get(index: Int): Flow<Performance> =
-    performances.child(index.toString()).snapshots.map {
-      Performance(
-        id = index,
-        name = it["name"],
-        city = it["city"],
-        category = it["category"],
-        performance = it["performance"],
-        age = it.child("age").getValue<Long>(),
-        nomination = it["nomination"],
-      )
-    }
-
-  suspend fun rate(index: Int, userID: String, rating: Double) {
-    performances.child("$index/ratings/$userID").setValue(rating).await()
+  operator fun get(index: Int): Flow<Performance> = child(index).snapshots.map {
+    Performance(
+      id = index,
+      name = it["name"],
+      city = it["city"],
+      category = it["category"],
+      performance = it["performance"],
+      age = it.child("age").getValue<Long>(),
+      nomination = it["nomination"],
+    )
   }
 
+  fun getRating(index: Int, userID: String): Flow<Double?> =
+    rating(index, userID).snapshots.map { it.getValue<Double>() }
+
+  suspend fun rate(index: Int, userID: String, rating: Double) {
+    rating(index, userID).setValue(rating).await()
+  }
+
+  fun getComment(index: Int, userID: String): Flow<String?> =
+    comment(index, userID).snapshots.map { it.getValue<String>() }
+
   suspend fun comment(index: Int, userID: String, comment: String) {
-    performances.child("$index/comments/$userID").setValue(comment).await()
+    comment(index, userID).setValue(comment).await()
   }
 }
