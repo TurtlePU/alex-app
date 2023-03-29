@@ -107,17 +107,32 @@ fun RatingButton(
 
 @Composable
 fun Performance.View() {
-  Row(verticalAlignment = Alignment.Top) {
-    Text(text = category)
+  Row(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(vertical = 10.dp),
+    verticalAlignment = Alignment.Top,
+    horizontalArrangement = Arrangement.SpaceEvenly,
+  ) {
+    Text(text = category?.firstWord ?: "")
     Column {
-      Text(text = nomination.firstWord)
+      Text(text = nomination?.firstWord ?: "")
       Text(text = age.toString())
     }
     Column {
-      Text(text = "$name (#$id)")
-      Text(text = performance)
+      Text(
+        text = "$name (#$id)",
+        textAlign = TextAlign.Center,
+      )
+      Text(
+        text = performance ?: "",
+        textAlign = TextAlign.Center
+      )
     }
-    Text(text = city)
+    Text(
+      text = city ?: "",
+      textAlign = TextAlign.Right
+    )
   }
 }
 

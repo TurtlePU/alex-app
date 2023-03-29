@@ -11,19 +11,19 @@ import kotlinx.coroutines.tasks.await
 
 data class Performance(
   val id: Int,
-  val name: String,
-  val city: String,
-  val category: String,
-  val performance: String,
-  val age: Long,
-  val nomination: String,
+  val name: String?,
+  val city: String?,
+  val category: String?,
+  val performance: String?,
+  val age: Long?,
+  val nomination: String?,
 )
 
 object PerformanceRepo {
   private val performances: DatabaseReference =
     FirebaseDatabase.getInstance().getReference("performances")
 
-  private operator fun DataSnapshot.get(key: String): String = child(key).getValue<String>()!!
+  private operator fun DataSnapshot.get(key: String): String? = child(key).getValue<String>()
 
   val countFlow: Flow<Int> = performances.snapshots.map { it.childrenCount.toInt() }
 
@@ -35,7 +35,7 @@ object PerformanceRepo {
         city = it["city"],
         category = it["category"],
         performance = it["performance"],
-        age = it.child("age").getValue<Long>()!!,
+        age = it.child("age").getValue<Long>(),
         nomination = it["nomination"],
       )
     }
