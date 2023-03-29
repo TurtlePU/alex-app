@@ -6,20 +6,28 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.google.firebase.auth.FirebaseAuth
 import com.msys.alexapp.services.User
 import com.msys.alexapp.services.usersFlow
 import com.msys.alexapp.ui.theme.AlexAppTheme
 
 @Composable
 fun Authorization(reportUserID: (String) -> Unit) {
-  val users by usersFlow.collectAsState(initial = listOf())
-  UserPicker(users = users, reportUserID = reportUserID)
+  var signedIn: Boolean by rememberSaveable { mutableStateOf(false) }
+  if (signedIn) {
+    val users by usersFlow.collectAsState(initial = listOf())
+    UserPicker(users = users, reportUserID = reportUserID)
+  } else {
+    LaunchedEffect(signedIn) {
+      FirebaseAuth.getInstance().signInAnonymously()
+      signedIn = true
+    }
+  }
 }
 
 @Composable
