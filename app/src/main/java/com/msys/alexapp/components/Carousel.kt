@@ -53,6 +53,7 @@ fun PerformancePager(
     val id = pageKeys[index]
     val performance by performances(id).collectAsState(initial = null)
     PerformancePage(
+      index,
       performance,
       ratings(id),
       comments(id),
@@ -64,6 +65,7 @@ fun PerformancePager(
 
 @Composable
 fun PerformancePage(
+  index: Int,
   performance: Performance?,
   rateFlow: Flow<Double?>,
   commentFlow: Flow<String?>,
@@ -92,7 +94,7 @@ fun PerformancePage(
       modifier = Modifier.fillMaxSize(),
       verticalArrangement = Arrangement.SpaceEvenly,
     ) {
-      performance.View()
+      performance.View(index)
       RatingPad(rating) { rating = it }
       TextField(
         value = comment ?: "",
@@ -149,7 +151,7 @@ fun RatingButton(
 }
 
 @Composable
-fun Performance.View() {
+fun Performance.View(index: Int) {
   Row(
     modifier = Modifier
       .fillMaxWidth()
@@ -164,7 +166,7 @@ fun Performance.View() {
     }
     Column {
       Text(
-        text = "$name (#$id)",
+        text = "$name (#${index + 1})",
         textAlign = TextAlign.Center,
       )
       Text(
@@ -182,7 +184,6 @@ fun Performance.View() {
 val String.firstWord: String get() = this.trim().split(' ').first()
 
 private val example = Performance(
-  "0",
   "Android",
   "New York",
   "II",
@@ -196,18 +197,20 @@ private val example = Performance(
 fun PerformancePagePreview() {
   AlexAppTheme {
     PerformancePage(
+      index = 0,
       performance = example,
       rateFlow = emptyFlow(),
       commentFlow = emptyFlow(),
       sendRating = {},
-      sendComment = {})
+      sendComment = {},
+    )
   }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun PerformancePagerPreview() {
-  val examples = mapOf(example.id to example)
+  val examples = mapOf("gibberish" to example)
   PerformancePager(
     pageKeys = examples.keys.toList(),
     performances = { flowOf(examples[it]!!) },

@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 
 data class Performance(
-  val id: String,
   val name: String?,
   val city: String?,
   val category: String?,
@@ -38,7 +37,6 @@ object PerformanceRepo {
 
   operator fun get(performanceId: String): Flow<Performance> = child(performanceId).snapshots.map {
     Performance(
-      id = performanceId,
       name = it["name"],
       city = it["city"],
       category = it["category"],
