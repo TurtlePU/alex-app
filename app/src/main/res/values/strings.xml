@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Alex App</string>
+    <string name="login_stage">Я выпускающий</string>
+    <string name="login_jury">Я жюри</string>
 </resources>

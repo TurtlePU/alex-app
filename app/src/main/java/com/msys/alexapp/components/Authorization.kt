@@ -9,11 +9,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.msys.alexapp.R
 import com.msys.alexapp.ui.theme.AlexAppTheme
 import kotlinx.coroutines.launch
 
@@ -79,7 +81,7 @@ fun AuthorizationCallback.Authorization() {
         modifier = Modifier.weight(1f),
         enabled = enabled,
       ) {
-        Text(text = "Я жюри")
+        Text(text = stringResource(R.string.login_jury))
       }
       Spacer(modifier = Modifier.padding(5.dp))
       OutlinedButton(
@@ -87,7 +89,7 @@ fun AuthorizationCallback.Authorization() {
         modifier = Modifier.weight(1f),
         enabled = enabled,
       ) {
-        Text(text = "Я выпускающий")
+        Text(text = stringResource(R.string.login_stage))
       }
     }
   }
