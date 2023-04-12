@@ -14,14 +14,13 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.google.firebase.auth.FirebaseAuth
 import com.msys.alexapp.ui.theme.AlexAppTheme
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 interface AuthorizationCallback {
   fun reportJuryID(uid: String)
   fun reportStageID(uid: String)
+  suspend fun signIn(email: String, password: String): String
 }
 
 @Composable
@@ -39,10 +38,7 @@ fun AuthorizationCallback.Authorization() {
       inProgress = true
       scope.launch {
         try {
-          val res = FirebaseAuth.getInstance()
-            .signInWithEmailAndPassword(mail, pass)
-            .await()
-          report(res.user!!.uid)
+          report(signIn(mail, pass))
         } finally {
           inProgress = false
         }
@@ -104,6 +100,7 @@ fun AuthorizationPreview() {
     object : AuthorizationCallback {
       override fun reportJuryID(uid: String) {}
       override fun reportStageID(uid: String) {}
+      override suspend fun signIn(email: String, password: String) = email
     }.Authorization()
   }
 }

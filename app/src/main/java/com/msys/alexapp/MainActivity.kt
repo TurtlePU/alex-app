@@ -12,10 +12,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.auth.FirebaseAuth
 import com.msys.alexapp.components.Authorization
 import com.msys.alexapp.components.AuthorizationCallback
 import com.msys.alexapp.components.Carousel
 import com.msys.alexapp.ui.theme.AlexAppTheme
+import kotlinx.coroutines.tasks.await
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,6 +41,8 @@ fun NavComposable() {
       object : AuthorizationCallback {
         override fun reportJuryID(uid: String) = navController.navigate("carousel/$uid")
         override fun reportStageID(uid: String) = navController.navigate("carousel/$uid")
+        override suspend fun signIn(email: String, password: String) =
+          FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password).await().user!!.uid
       }.Authorization()
     }
     composable("carousel/{userID}") { backStackEntry ->
