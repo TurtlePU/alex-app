@@ -1,50 +1,78 @@
 package com.msys.alexapp.components
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import com.google.firebase.auth.FirebaseAuth
-import com.msys.alexapp.services.User
-import com.msys.alexapp.services.usersFlow
 import com.msys.alexapp.ui.theme.AlexAppTheme
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
-@Composable
-fun Authorization(reportUserID: (String) -> Unit) {
-  var signedIn: Boolean by rememberSaveable { mutableStateOf(false) }
-  if (signedIn) {
-    val users by usersFlow.collectAsState(initial = listOf())
-    UserPicker(users = users, reportUserID = reportUserID)
-  } else {
-    LaunchedEffect(true) {
-      FirebaseAuth.getInstance().signInAnonymously()
-      signedIn = true
-    }
-  }
+interface AuthorizationCallback {
+  fun reportJuryID(uid: String)
+  fun reportStageID(uid: String)
 }
 
 @Composable
-fun UserPicker(users: List<User>, reportUserID: (String) -> Unit) {
-  Column(
-    modifier = Modifier.fillMaxSize(),
-    verticalArrangement = Arrangement.SpaceEvenly
-  ) {
-    for (user in users) {
-      Box(
-        modifier = Modifier
-          .fillMaxSize()
-          .weight(1f)
-          .clickable { reportUserID(user.name) },
-        contentAlignment = Alignment.Center,
-      ) {
-        Text(text = user.name)
+fun AuthorizationCallback.Authorization() {
+  var email: String? by rememberSaveable { mutableStateOf(null) }
+  var password: String? by rememberSaveable { mutableStateOf(null) }
+  var passwordHidden: Boolean by rememberSaveable { mutableStateOf(true) }
+  var inProgress: Boolean by rememberSaveable { mutableStateOf(false) }
+  val scope = rememberCoroutineScope()
+
+  val tryLogin: ((String) -> Unit) -> Unit = { report ->
+    val mail = email
+    val pass = password
+    if (mail != null && pass != null && !inProgress) {
+      inProgress = true
+      scope.launch {
+        try {
+          val res = FirebaseAuth.getInstance()
+            .signInWithEmailAndPassword(mail, pass)
+            .await()
+          report(res.user!!.uid)
+        } finally {
+          inProgress = false
+        }
+      }
+    }
+  }
+
+  Column {
+    TextField(
+      value = email ?: "",
+      onValueChange = { email = it },
+      modifier = Modifier.fillMaxWidth(),
+      keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+    )
+    TextField(
+      value = password ?: "",
+      onValueChange = { password = it },
+      modifier = Modifier.fillMaxWidth(),
+      trailingIcon = {
+        IconButton(onClick = { passwordHidden = !passwordHidden }) {}
+      },
+      visualTransformation =
+      if (passwordHidden) PasswordVisualTransformation()
+      else VisualTransformation.None,
+      keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+    )
+    Row {
+      Button(onClick = { tryLogin(::reportJuryID) }) {
+        Text(text = "Войти как жюри")
+      }
+      Button(onClick = { tryLogin(::reportStageID) }) {
+        Text(text = "Войти как выпускающий")
       }
     }
   }
@@ -52,10 +80,11 @@ fun UserPicker(users: List<User>, reportUserID: (String) -> Unit) {
 
 @Preview(showBackground = true)
 @Composable
-fun UserPickerPreview() {
-  val exampleUsers = listOf(
-    User("android", "Android"),
-    User("ios", "iPhone")
-  )
-  AlexAppTheme { UserPicker(exampleUsers) {} }
+fun AuthorizationPreview() {
+  AlexAppTheme {
+    object : AuthorizationCallback {
+      override fun reportJuryID(uid: String) {}
+      override fun reportStageID(uid: String) {}
+    }.Authorization()
+  }
 }

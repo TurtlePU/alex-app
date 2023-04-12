@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.msys.alexapp.components.Authorization
+import com.msys.alexapp.components.AuthorizationCallback
 import com.msys.alexapp.components.Carousel
 import com.msys.alexapp.ui.theme.AlexAppTheme
 
@@ -35,7 +36,10 @@ fun NavComposable() {
   val navController = rememberNavController()
   NavHost(navController = navController, startDestination = "authorization") {
     composable("authorization") {
-      Authorization { userID -> navController.navigate("carousel/$userID") }
+      object : AuthorizationCallback {
+        override fun reportJuryID(uid: String) = navController.navigate("carousel/$uid")
+        override fun reportStageID(uid: String) = navController.navigate("carousel/$uid")
+      }.Authorization()
     }
     composable("carousel/{userID}") { backStackEntry ->
       Carousel(backStackEntry.arguments!!.getString("userID")!!)
