@@ -2,10 +2,10 @@ package com.msys.alexapp.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -66,7 +66,14 @@ fun AuthorizationCallback.Authorization() {
       onValueChange = { password = it },
       modifier = Modifier.fillMaxWidth(),
       trailingIcon = {
-        IconButton(onClick = { passwordHidden = !passwordHidden }) {}
+        IconButton(onClick = { passwordHidden = !passwordHidden }) {
+          Icon(
+            imageVector =
+            if (passwordHidden) Icons.Filled.VisibilityOff
+            else Icons.Filled.Visibility,
+            contentDescription = stringResource(R.string.show_password),
+          )
+        }
       },
       visualTransformation =
       if (passwordHidden) PasswordVisualTransformation()
