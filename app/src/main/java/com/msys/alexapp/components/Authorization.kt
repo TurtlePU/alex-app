@@ -68,10 +68,17 @@ fun AuthorizationCallback.Authorization() {
       keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
     )
     Row {
-      Button(onClick = { tryLogin(::reportJuryID) }) {
+      val enabled = email != null && password != null && !inProgress
+      Button(
+        onClick = { tryLogin(::reportJuryID) },
+        enabled = enabled,
+      ) {
         Text(text = "Войти как жюри")
       }
-      Button(onClick = { tryLogin(::reportStageID) }) {
+      Button(
+        onClick = { tryLogin(::reportStageID) },
+        enabled = enabled,
+      ) {
         Text(text = "Войти как выпускающий")
       }
     }
