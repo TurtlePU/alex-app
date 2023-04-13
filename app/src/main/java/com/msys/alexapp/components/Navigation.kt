@@ -34,6 +34,9 @@ fun AlexAppService.NavComposable() {
           navController.navigate("list/$id")
         }
       }
+      composable("list/{adminID}") {
+        PerformanceList()
+      }
     }
     navigation(route = JURY.toString(), startDestination = "invitations") {
       composable("invitations") {
