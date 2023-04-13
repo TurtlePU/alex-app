@@ -5,8 +5,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.msys.alexapp.repo.Role
-import com.msys.alexapp.repo.Role.Companion.toRole
+import com.msys.alexapp.data.Role
+import com.msys.alexapp.data.Role.Companion.toRole
 import com.msys.alexapp.ui.theme.AlexAppTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf

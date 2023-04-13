@@ -7,8 +7,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
-import com.msys.alexapp.repo.Role
-import com.msys.alexapp.repo.Role.*
+import com.msys.alexapp.data.Role
+import com.msys.alexapp.data.Role.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 

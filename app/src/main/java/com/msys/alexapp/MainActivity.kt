@@ -8,7 +8,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.msys.alexapp.components.NavComposable
-import com.msys.alexapp.repo.FirebaseService
 import com.msys.alexapp.ui.theme.AlexAppTheme
 
 class MainActivity : ComponentActivity() {
