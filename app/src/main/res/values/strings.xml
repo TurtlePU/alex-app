@@ -3,4 +3,7 @@
     <string name="login_stage">Я выпускающий</string>
     <string name="login_jury">Я жюри</string>
     <string name="show_password">Показать пароль</string>
+    <string name="rate_button">Поставить оценку</string>
+    <string name="no_performance">Перерыв</string>
+    <string name="rated_performance">Выступление уже оценено</string>
 </resources>

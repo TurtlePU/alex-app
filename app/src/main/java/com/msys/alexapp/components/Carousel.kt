@@ -1,109 +1,68 @@
 package com.msys.alexapp.components
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.msys.alexapp.repo.Performance
-import com.msys.alexapp.repo.PerformanceRepo
+import com.msys.alexapp.R
+import com.msys.alexapp.data.Performance
 import com.msys.alexapp.ui.theme.AlexAppTheme
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flowOf
-import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.launch
 
-@Composable
-fun Carousel() {
-  val pageKeys by PerformanceRepo.listFlow.collectAsState(initial = listOf())
-  PerformancePager(
-    pageKeys = pageKeys,
-    performances = { PerformanceRepo[it] },
-    ratings = { PerformanceRepo.getRating(it) },
-    comments = { PerformanceRepo.getComment(it) },
-    rate = { performanceID, rating -> PerformanceRepo.rate(performanceID, rating) },
-    comment = { performanceID, comment -> PerformanceRepo.comment(performanceID, comment) },
-  )
+interface CarouselService {
+  val currentPerformance: Flow<Performance>
+  val canComment: Flow<Boolean>
+  fun isEvaluated(id: String): Flow<Boolean>
+  suspend fun sendInvitation()
+  suspend fun evaluate(id: String, rating: Double, comment: String?)
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun PerformancePager(
-  pageKeys: List<String>,
-  performances: (String) -> Flow<Performance>,
-  ratings: (String) -> Flow<Double?>,
-  comments: (String) -> Flow<String?>,
-  rate: suspend (String, Double) -> Unit,
-  comment: suspend (String, String) -> Unit,
-) {
-  HorizontalPager(
-    pageCount = pageKeys.size,
-    verticalAlignment = Alignment.Top,
-    key = { pageKeys[it] },
-  ) { index ->
-    val id = pageKeys[index]
-    val performance by performances(id).collectAsState(initial = null)
-    PerformancePage(
-      index,
-      performance,
-      ratings(id),
-      comments(id),
-      { rate(id, it) },
-      { comment(id, it) },
-    )
+fun CarouselService.Carousel() {
+  LaunchedEffect(true) {
+    sendInvitation()
   }
+  val performance by currentPerformance.collectAsState(initial = null)
+  performance?.let {
+    val hidePage by isEvaluated(it.id).collectAsState(initial = true)
+    if (hidePage) {
+      Text(text = stringResource(R.string.rated_performance))
+    } else {
+      val canComment by this.canComment.collectAsState(initial = false)
+      PerformancePage(it, canComment) { rating, comment ->
+        evaluate(it.id, rating, comment)
+      }
+    }
+  } ?: Text(text = stringResource(R.string.no_performance))
 }
 
 @Composable
 fun PerformancePage(
-  index: Int,
-  performance: Performance?,
-  rateFlow: Flow<Double?>,
-  commentFlow: Flow<String?>,
-  sendRating: suspend (Double) -> Unit,
-  sendComment: suspend (String) -> Unit,
+  performance: Performance,
+  canComment: Boolean,
+  evaluate: suspend (Double, String?) -> Unit
 ) {
   var rating: Double? by rememberSaveable { mutableStateOf(null) }
-  if (rating == null) {
-    val oldRating: Double? by rateFlow.collectAsState(initial = null)
-    rating = oldRating
+  val scope = rememberCoroutineScope()
+  val report: (String?) -> Unit = { comment ->
+    rating?.let { rating -> scope.launch { evaluate(rating, comment) } }
   }
-  var comment: String? by rememberSaveable { mutableStateOf(null) }
-  if (comment == null) {
-    val oldComment: String? by commentFlow.collectAsState(initial = null)
-    comment = oldComment
-  }
-  LaunchedEffect(true) {
-    while (true) {
-      delay(5.seconds)
-      rating?.let { sendRating(it) }
-      comment?.let { sendComment(it) }
-    }
-  }
-  if (performance != null) {
-    Column(
-      modifier = Modifier.fillMaxSize(),
-      verticalArrangement = Arrangement.SpaceEvenly,
-    ) {
-      performance.View(index)
-      RatingPad(rating) { rating = it }
-      TextField(
-        value = comment ?: "",
-        onValueChange = { comment = it },
-        modifier = Modifier
-          .padding(vertical = 5.dp)
-          .fillMaxWidth(),
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
-      )
+  performance.View {
+    RatingPad(rating) { rating = it }
+    if (canComment) {
+      CommentSection(report)
+    } else {
+      OutlinedButton(onClick = { report(null) }) {
+        Text(text = stringResource(R.string.rate_button))
+      }
     }
   }
 }
@@ -151,72 +110,37 @@ fun RatingButton(
 }
 
 @Composable
-fun Performance.View(index: Int) {
-  Row(
+fun CommentSection(sendComment: (String?) -> Unit) {
+  var comment: String? by rememberSaveable { mutableStateOf(null) }
+  TextField(
+    value = comment ?: "",
+    onValueChange = { comment = it },
     modifier = Modifier
-      .fillMaxWidth()
-      .padding(vertical = 10.dp),
-    verticalAlignment = Alignment.Top,
-    horizontalArrangement = Arrangement.SpaceEvenly,
-  ) {
-    Text(text = category?.firstWord ?: "")
-    Column {
-      Text(text = nomination?.firstWord ?: "")
-      Text(text = age.toString())
-    }
-    Column {
-      Text(
-        text = "$name (#${index + 1})",
-        textAlign = TextAlign.Center,
-      )
-      Text(
-        text = performance ?: "",
-        textAlign = TextAlign.Center
-      )
-    }
-    Text(
-      text = city ?: "",
-      textAlign = TextAlign.Right
-    )
-  }
+      .padding(vertical = 5.dp)
+      .fillMaxWidth(),
+    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+    keyboardActions = KeyboardActions(onDone = { sendComment(comment) }),
+  )
 }
 
-val String.firstWord: String get() = this.trim().split(' ').first()
-
 private val example = Performance(
-  "Android",
-  "New York",
-  "II",
-  "Sing Along",
-  13,
-  "song"
+  id = "0",
+  index = 0,
+  name = "Android",
+  city = "New York",
+  category = "II",
+  performance = "Sing Along",
+  age = 13,
+  nomination = "song"
 )
 
 @Preview(showBackground = true)
 @Composable
-fun PerformancePagePreview() {
+fun PagePreview(canComment: Boolean = true) {
   AlexAppTheme {
     PerformancePage(
-      index = 0,
       performance = example,
-      rateFlow = emptyFlow(),
-      commentFlow = emptyFlow(),
-      sendRating = {},
-      sendComment = {},
-    )
+      canComment = canComment,
+    ) { _, _ -> }
   }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PerformancePagerPreview() {
-  val examples = mapOf("gibberish" to example)
-  PerformancePager(
-    pageKeys = examples.keys.toList(),
-    performances = { flowOf(examples[it]!!) },
-    ratings = { emptyFlow() },
-    comments = { emptyFlow() },
-    rate = { _, _ -> },
-    comment = { _, _ -> },
-  )
 }

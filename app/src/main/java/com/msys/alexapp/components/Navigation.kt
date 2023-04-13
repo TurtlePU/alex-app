@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.Role
 import com.msys.alexapp.data.Role.*
 import com.msys.alexapp.ui.theme.AlexAppTheme
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.flowOf
 
 interface AlexAppService : AuthorizationService {
   fun invitationsFrom(role: Role): Flow<List<String>>
+  fun carouselService(stageID: String): CarouselService
 }
 
 @Composable
@@ -38,6 +40,9 @@ fun AlexAppService.NavComposable() {
           navController.navigate("carousel/$id")
         }
       }
+      composable("carousel/{stageID}") { backStack ->
+        carouselService(backStack.arguments!!.getString("stageID")!!).Carousel()
+      }
     }
   }
 }
@@ -49,6 +54,13 @@ fun DefaultPreview() {
     object : AlexAppService {
       override suspend fun signIn(email: String, password: String) {}
       override fun invitationsFrom(role: Role) = flowOf(listOf("wow"))
+      override fun carouselService(stageID: String) = object : CarouselService {
+        override val currentPerformance: Flow<Performance> get() = flowOf()
+        override val canComment: Flow<Boolean> = flowOf(true)
+        override fun isEvaluated(id: String): Flow<Boolean> = flowOf(false)
+        override suspend fun sendInvitation() {}
+        override suspend fun evaluate(id: String, rating: Double, comment: String?) {}
+      }
     }.NavComposable()
   }
 }
