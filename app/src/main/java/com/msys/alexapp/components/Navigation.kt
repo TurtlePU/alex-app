@@ -12,7 +12,6 @@ import com.msys.alexapp.data.Role.*
 import com.msys.alexapp.ui.theme.AlexAppTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
-import java.util.*
 
 interface AlexAppService : AuthorizationService {
   fun invitationsFrom(role: Role): Flow<List<String>>
@@ -60,9 +59,7 @@ fun DefaultPreview() {
       override fun invitationsFrom(role: Role) = flowOf(listOf("wow"))
       override fun carouselService(stageID: String) = object : JuryService {
         override val currentPerformance: Flow<Performance> get() = flowOf()
-        override val performanceCount: Flow<Long> get() = flowOf()
-        override val canComment: Flow<Boolean> = flowOf(true)
-        override val deadline: Flow<Date> get() = flowOf(Date())
+        override val juryAdvice: Flow<Advice> get() = flowOf(Advice(currentDate()))
         override fun isEvaluated(id: String): Flow<Boolean> = flowOf(false)
         override fun averageRating(id: String): Flow<Double?> = flowOf(null)
         override suspend fun sendInvitation() {}

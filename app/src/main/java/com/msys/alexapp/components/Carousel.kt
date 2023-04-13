@@ -15,6 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
 import com.msys.alexapp.data.Performance
 import com.msys.alexapp.ui.theme.AlexAppTheme
@@ -22,11 +23,15 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import java.util.*
 
+data class Advice(
+  val deadline: Date,
+  val performanceCount: Long = 0,
+  val canComment: Boolean = false,
+)
+
 interface JuryService {
   val currentPerformance: Flow<Performance?>
-  val performanceCount: Flow<Long>
-  val canComment: Flow<Boolean>
-  val deadline: Flow<Date>
+  val juryAdvice: Flow<Advice>
   fun isEvaluated(id: String): Flow<Boolean>
   fun averageRating(id: String): Flow<Double?>
   suspend fun sendInvitation()
@@ -38,17 +43,15 @@ fun JuryService.Carousel() {
   LaunchedEffect(true) {
     sendInvitation()
   }
-  val performance by currentPerformance.collectAsState(initial = null)
+  val performance by currentPerformance.collectAsStateWithLifecycle(initialValue = null)
   performance?.let {
-    val hidePage by isEvaluated(it.id).collectAsState(initial = true)
+    val hidePage by isEvaluated(it.id).collectAsStateWithLifecycle(initialValue = true)
     if (hidePage) {
-      val rating by averageRating(it.id).collectAsState(initial = .0)
+      val rating by averageRating(it.id).collectAsStateWithLifecycle(initialValue = .0)
       RatingPage(rating!!)
     } else {
-      val canComment by this.canComment.collectAsState(initial = false)
-      val index by performanceCount.collectAsState(initial = 0)
-      val deadline by this.deadline.collectAsState(initial = Date())
-      PerformancePage(it, index, deadline, canComment) { rating, comment ->
+      val advice by juryAdvice.collectAsStateWithLifecycle(initialValue = Advice(currentDate()))
+      advice.PerformancePage(it) { rating, comment ->
         evaluate(it.id, rating, comment)
       }
     }
@@ -61,18 +64,15 @@ fun RatingPage(rating: Double) {
 }
 
 @Composable
-fun PerformancePage(
+fun Advice.PerformancePage(
   performance: Performance,
-  index: Long,
-  deadline: Date,
-  canComment: Boolean,
   evaluate: suspend (Double, String?) -> Unit
 ) {
   var rating: Double? by rememberSaveable { mutableStateOf(null) }
   var comment: String? by rememberSaveable { mutableStateOf(null) }
   val scope = rememberCoroutineScope()
   performance.View(
-    index = index,
+    index = performanceCount,
     deadline = deadline,
     floatingActionButton = {
       if (rating != null) {
@@ -150,21 +150,12 @@ fun CommentSection(value: String, onValueChange: (String) -> Unit) {
 
 @Preview(showBackground = true)
 @Composable
-fun PagePreview(canComment: Boolean = true) {
-  AlexAppTheme {
-    PerformancePage(
-      performance = example,
-      index = 0,
-      deadline = Date(Date().time + timeout.inWholeMilliseconds),
-      canComment = canComment,
-    ) { _, _ -> }
-  }
+fun PagePreview(advice: Advice = Advice(currentDate())) {
+  AlexAppTheme { advice.PerformancePage(example) { _, _ -> } }
 }
 
 @Preview
 @Composable
 fun EvaluatedPreview() {
-  AlexAppTheme {
-    RatingPage(rating = 5.5)
-  }
+  AlexAppTheme { RatingPage(rating = 5.5) }
 }
