@@ -21,12 +21,11 @@ import com.msys.alexapp.ui.theme.AlexAppTheme
 import kotlinx.coroutines.launch
 
 interface AuthorizationService {
-  fun become(role: Role)
   suspend fun signIn(email: String, password: String)
 }
 
 @Composable
-fun AuthorizationService.Authorization() {
+fun AuthorizationService.Authorization(become: (Role) -> Unit) {
   var email: String? by rememberSaveable { mutableStateOf(null) }
   var password: String? by rememberSaveable { mutableStateOf(null) }
   var passwordHidden: Boolean by rememberSaveable { mutableStateOf(true) }
@@ -108,8 +107,7 @@ fun AuthorizationService.Authorization() {
 fun AuthorizationPreview() {
   AlexAppTheme {
     object : AuthorizationService {
-      override fun become(role: Role) {}
       override suspend fun signIn(email: String, password: String) {}
-    }.Authorization()
+    }.Authorization {}
   }
 }

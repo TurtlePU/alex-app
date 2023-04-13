@@ -11,8 +11,7 @@ import com.msys.alexapp.ui.theme.AlexAppTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
-interface AlexAppService {
-  suspend fun signIn(email: String, password: String)
+interface AlexAppService : AuthorizationService {
   fun invitationsFrom(role: Role): Flow<List<String>>
 }
 
@@ -21,13 +20,7 @@ fun AlexAppService.NavComposable() {
   val navController = rememberNavController()
   NavHost(navController = navController, startDestination = "authorization") {
     composable("authorization") {
-      object : AuthorizationService {
-        override suspend fun signIn(email: String, password: String) {
-          this@NavComposable.signIn(email, password)
-        }
-
-        override fun become(role: Role) = navController.navigate("start/$role")
-      }.Authorization()
+      Authorization { role -> navController.navigate("start/$role") }
     }
     composable("start/admin") {}
     composable("start/stage") {
