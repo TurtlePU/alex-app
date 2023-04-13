@@ -16,6 +16,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.msys.alexapp.components.Authorization
 import com.msys.alexapp.components.AuthorizationCallback
 import com.msys.alexapp.components.Carousel
+import com.msys.alexapp.services.Role
 import com.msys.alexapp.ui.theme.AlexAppTheme
 import kotlinx.coroutines.tasks.await
 
@@ -39,8 +40,7 @@ fun NavComposable() {
   NavHost(navController = navController, startDestination = "authorization") {
     composable("authorization") {
       object : AuthorizationCallback {
-        override fun becomeJury() = navController.navigate("carousel")
-        override fun becomeStage() = navController.navigate("carousel")
+        override fun become(role: Role) = navController.navigate("carousel")
         override suspend fun signIn(email: String, password: String) {
           FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password).await()
         }

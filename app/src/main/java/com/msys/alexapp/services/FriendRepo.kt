@@ -10,6 +10,16 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.asDeferred
 import kotlinx.coroutines.tasks.await
 
+enum class Role {
+  ADMIN, STAGE, JURY;
+
+  override fun toString() = when (this) {
+    ADMIN -> "admin"
+    STAGE -> "stage"
+    JURY -> "jury"
+  }
+}
+
 private fun invitations(email: String, uid: String? = null): DatabaseReference =
   FirebaseDatabase.getInstance()
     .getReference("invitations/$email")
@@ -18,13 +28,14 @@ private fun invitations(email: String, uid: String? = null): DatabaseReference =
 private fun friends(uid: String): DatabaseReference =
   FirebaseDatabase.getInstance().getReference("data/$uid/friends")
 
-fun friendIdsByRole(role: String): Flow<List<String>> =
+fun friendIdsByRole(role: Role): Flow<List<String>> =
   invitations(FirebaseAuth.getInstance().currentUser!!.email!!)
-    .snapshots.map { data -> data.children.filter { it.value == role }.map { it.key!! } }
+    .snapshots.map { data -> data.children.filter { it.value == role.toString() }.map { it.key!! } }
 
-suspend fun chooseFriends(myRole: String, emails: List<String>) {
+suspend fun chooseFriends(myRole: Role, emails: List<String>) {
   val uid = FirebaseAuth.getInstance().uid!!
   val friendTask = friends(uid).setValue(emails.associateWith { "" })
-  emails.map { email -> invitations(email, uid).setValue(myRole).asDeferred() }.awaitAll()
+  val role = myRole.toString()
+  emails.map { email -> invitations(email, uid).setValue(role).asDeferred() }.awaitAll()
   friendTask.await()
 }

@@ -16,12 +16,12 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.msys.alexapp.R
+import com.msys.alexapp.services.Role
 import com.msys.alexapp.ui.theme.AlexAppTheme
 import kotlinx.coroutines.launch
 
 interface AuthorizationCallback {
-  fun becomeJury()
-  fun becomeStage()
+  fun become(role: Role)
   suspend fun signIn(email: String, password: String)
 }
 
@@ -33,7 +33,7 @@ fun AuthorizationCallback.Authorization() {
   var inProgress: Boolean by rememberSaveable { mutableStateOf(false) }
   val scope = rememberCoroutineScope()
 
-  val tryLogin: (() -> Unit) -> Unit = { report ->
+  val signInAs: (Role) -> Unit = { role ->
     val mail = email
     val pass = password
     if (mail != null && pass != null && !inProgress) {
@@ -41,7 +41,7 @@ fun AuthorizationCallback.Authorization() {
       scope.launch {
         try {
           signIn(mail, pass)
-          report()
+          become(role)
         } finally {
           inProgress = false
         }
@@ -85,7 +85,7 @@ fun AuthorizationCallback.Authorization() {
     Row(horizontalArrangement = Arrangement.SpaceBetween) {
       val enabled = email != null && password != null && !inProgress
       OutlinedButton(
-        onClick = { tryLogin(::becomeJury) },
+        onClick = { signInAs(Role.JURY) },
         modifier = Modifier.weight(1f),
         enabled = enabled,
       ) {
@@ -93,7 +93,7 @@ fun AuthorizationCallback.Authorization() {
       }
       Spacer(modifier = Modifier.padding(5.dp))
       OutlinedButton(
-        onClick = { tryLogin(::becomeStage) },
+        onClick = { signInAs(Role.STAGE) },
         modifier = Modifier.weight(1f),
         enabled = enabled,
       ) {
@@ -108,8 +108,7 @@ fun AuthorizationCallback.Authorization() {
 fun AuthorizationPreview() {
   AlexAppTheme {
     object : AuthorizationCallback {
-      override fun becomeJury() {}
-      override fun becomeStage() {}
+      override fun become(role: Role) {}
       override suspend fun signIn(email: String, password: String) {}
     }.Authorization()
   }
