@@ -1,7 +1,6 @@
 package com.msys.alexapp.services
 
 import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.database.ktx.snapshots
 import com.msys.alexapp.components.CarouselService
@@ -14,7 +13,6 @@ import java.util.*
 
 class FirebaseCarouselService(private val stageID: String) : CarouselService {
   companion object {
-    private val data: DatabaseReference get() = FirebaseDatabase.getInstance().getReference("data")
     private val jury: DatabaseReference get() = data.child(currentUID)
   }
 
@@ -22,13 +20,15 @@ class FirebaseCarouselService(private val stageID: String) : CarouselService {
   override val currentPerformance: Flow<Performance?>
     get() = stage.child("current").snapshots.map { it.children.firstOrNull()?.asPerformance }
   override val performanceCount: Flow<Long>
-    get() = stage.child("count").snapshots.map { it.getValue<Long>()!! }
+    get() = stage.child("done").snapshots.map { it.childrenCount }
   override val canComment: Flow<Boolean>
     get() = stage.child("comment").snapshots.map { it.exists() && it.value == true }
   override val deadline: Flow<Date>
     get() = stage.child("deadline").snapshots.map { Date(it.getValue<Long>()!!) }
 
   override fun isEvaluated(id: String): Flow<Boolean> = jury.child(id).snapshots.map { it.exists() }
+
+  override fun averageRating(id: String) = averageRatingFlow(id)
 
   override suspend fun sendInvitation() {
     val contacts = stage.child("contacts").get().await()

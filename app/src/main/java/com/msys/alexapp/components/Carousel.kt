@@ -28,6 +28,7 @@ interface CarouselService {
   val canComment: Flow<Boolean>
   val deadline: Flow<Date>
   fun isEvaluated(id: String): Flow<Boolean>
+  fun averageRating(id: String): Flow<Double?>
   suspend fun sendInvitation()
   suspend fun evaluate(id: String, rating: Double, comment: String?)
 }
@@ -41,7 +42,8 @@ fun CarouselService.Carousel() {
   performance?.let {
     val hidePage by isEvaluated(it.id).collectAsState(initial = true)
     if (hidePage) {
-      Text(text = stringResource(R.string.rated_performance))
+      val rating by averageRating(it.id).collectAsState(initial = .0)
+      RatingPage(rating!!)
     } else {
       val canComment by this.canComment.collectAsState(initial = false)
       val index by performanceCount.collectAsState(initial = 0)
@@ -51,6 +53,11 @@ fun CarouselService.Carousel() {
       }
     }
   } ?: Text(text = stringResource(R.string.no_performance))
+}
+
+@Composable
+fun RatingPage(rating: Double) {
+  Text(text = stringResource(R.string.rated_performance, rating))
 }
 
 @Composable
@@ -141,16 +148,6 @@ fun CommentSection(value: String, onValueChange: (String) -> Unit) {
   )
 }
 
-private val example = Performance(
-  id = "0",
-  name = "Android",
-  city = "New York",
-  category = "II",
-  performance = "Sing Along",
-  age = 13,
-  nomination = "song"
-)
-
 @Preview(showBackground = true)
 @Composable
 fun PagePreview(canComment: Boolean = true) {
@@ -161,5 +158,13 @@ fun PagePreview(canComment: Boolean = true) {
       deadline = Date(Date().time + timeout.inWholeMilliseconds),
       canComment = canComment,
     ) { _, _ -> }
+  }
+}
+
+@Preview
+@Composable
+fun EvaluatedPreview() {
+  AlexAppTheme {
+    RatingPage(rating = 5.5)
   }
 }

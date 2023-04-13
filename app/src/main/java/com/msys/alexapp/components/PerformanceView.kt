@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.msys.alexapp.data.Performance
 import kotlinx.coroutines.delay
@@ -31,7 +32,7 @@ fun Performance.View(
       modifier = Modifier
         .fillMaxSize()
         .padding(padding),
-      verticalArrangement = Arrangement.SpaceEvenly,
+      verticalArrangement = Arrangement.SpaceBetween,
     ) {
       Timeout(deadline)
       Row(
@@ -76,7 +77,10 @@ fun Timeout(deadline: Date) {
     }
   }
   val progress = (1f * (deadline.time - time.time) / timeout.inWholeMilliseconds).coerceIn(0f, 1f)
-  LinearProgressIndicator(progress = progress)
+  LinearProgressIndicator(
+    progress = progress,
+    modifier = Modifier.fillMaxWidth(),
+  )
 }
 
 fun currentDate(): Date = Calendar.getInstance().time
@@ -84,3 +88,19 @@ fun currentDate(): Date = Calendar.getInstance().time
 val timeout: Duration = 5.minutes
 
 val String.firstWord: String get() = this.trim().split(' ').first()
+
+val example = Performance(
+  id = "0",
+  name = "Android",
+  city = "New York",
+  category = "II",
+  performance = "Sing Along",
+  age = 13,
+  nomination = "song"
+)
+
+@Preview(showBackground = true)
+@Composable
+fun PerformancePreview() {
+  example.View(index = 0, deadline = Date(currentDate().time + timeout.inWholeMilliseconds)) {}
+}

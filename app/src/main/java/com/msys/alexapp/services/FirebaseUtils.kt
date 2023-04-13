@@ -8,10 +8,13 @@ import com.google.firebase.database.ktx.getValue
 import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.Role
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.asDeferred
 import kotlinx.coroutines.tasks.await
 
 val currentUID: String get() = FirebaseAuth.getInstance().uid!!
+val data: DatabaseReference get() = FirebaseDatabase.getInstance().getReference("data")
 
 suspend fun DatabaseReference.chooseFriends(myRole: Role, emails: List<String>) {
   val friendTask = child("friends").setValue(emails.associateWith { "" })
@@ -26,6 +29,19 @@ suspend fun DatabaseReference.chooseFriends(myRole: Role, emails: List<String>) 
     .awaitAll()
   friendTask.await()
 }
+
+fun averageRatingFlow(id: String): Flow<Double?> =
+  FirebaseService
+    .invitationsFrom(Role.JURY)
+    .map { jury ->
+      jury
+        .map { data.child("$it/$id/rating").get().asDeferred() }
+        .awaitAll() }
+    .map { ratings ->
+      ratings
+        .mapNotNull { it.getValue<Double>() }
+        .run { if (isEmpty()) null else sum() / size }
+    }
 
 val DataSnapshot.asPerformance: Performance
   get() = Performance(
