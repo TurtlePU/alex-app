@@ -1,10 +1,7 @@
 package com.msys.alexapp.components
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,7 +16,7 @@ import kotlinx.coroutines.flow.Flow
 fun Invitations(invitationsFlow: Flow<List<String>>, reportInvitation: (String) -> Unit) {
   val invitations by invitationsFlow.collectAsState(initial = listOf())
   if (invitations.isEmpty()) {
-    CircularProgressIndicator()
+    BigBox { CircularProgressIndicator() }
   } else if (invitations.size == 1) {
     reportInvitation(invitations[0])
   } else {
@@ -34,17 +31,26 @@ fun InvitationsPicker(invitations: List<String>, reportInvitation: (String) -> U
     verticalArrangement = Arrangement.SpaceEvenly,
   ) {
     for (id in invitations) {
-      Box(
+      BigBox(
         modifier = Modifier
-          .fillMaxSize()
           .weight(1f)
-          .clickable { reportInvitation(id) },
-        contentAlignment = Alignment.Center,
+          .clickable { reportInvitation(id) }
       ) {
         Text(text = id)
       }
     }
   }
+}
+
+@Composable
+fun BigBox(modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
+  Box(
+    modifier = Modifier
+      .fillMaxSize()
+      .then(modifier),
+    contentAlignment = Alignment.Center,
+    content = content,
+  )
 }
 
 @Preview
