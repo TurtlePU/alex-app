@@ -36,7 +36,8 @@ fun averageRatingFlow(id: String): Flow<Double?> =
     .map { jury ->
       jury
         .map { data.child("$it/$id/rating").get().asDeferred() }
-        .awaitAll() }
+        .awaitAll()
+    }
     .map { ratings ->
       ratings
         .mapNotNull { it.getValue<Double>() }
