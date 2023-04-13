@@ -18,6 +18,15 @@ enum class Role {
     STAGE -> "stage"
     JURY -> "jury"
   }
+
+  companion object {
+    fun String.toRole(): Role? = when (this) {
+      "admin" -> ADMIN
+      "stage" -> STAGE
+      "jury" -> JURY
+      else -> null
+    }
+  }
 }
 
 private fun invitations(email: String, uid: String? = null): DatabaseReference =
