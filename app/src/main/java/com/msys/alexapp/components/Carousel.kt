@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import java.util.*
 
-interface CarouselService {
+interface JuryService {
   val currentPerformance: Flow<Performance?>
   val performanceCount: Flow<Long>
   val canComment: Flow<Boolean>
@@ -34,7 +34,7 @@ interface CarouselService {
 }
 
 @Composable
-fun CarouselService.Carousel() {
+fun JuryService.Carousel() {
   LaunchedEffect(true) {
     sendInvitation()
   }

@@ -21,5 +21,5 @@ object FirebaseService : AlexAppService {
         data.children.filter { it.value == role.toString() }.map { it.key!! }
       }
 
-  override fun carouselService(stageID: String) = FirebaseCarouselService(stageID)
+  override fun carouselService(stageID: String) = FirebaseJuryService(stageID)
 }

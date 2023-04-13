@@ -3,7 +3,7 @@ package com.msys.alexapp.services
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.database.ktx.snapshots
-import com.msys.alexapp.components.CarouselService
+import com.msys.alexapp.components.JuryService
 import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.Role
 import kotlinx.coroutines.flow.Flow
@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 import java.util.*
 
-class FirebaseCarouselService(private val stageID: String) : CarouselService {
+class FirebaseJuryService(private val stageID: String) : JuryService {
   companion object {
     private val jury: DatabaseReference get() = data.child(currentUID)
   }
