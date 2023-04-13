@@ -24,7 +24,7 @@ fun AlexAppService.NavComposable() {
   val navController = rememberNavController()
   NavHost(navController = navController, startDestination = "authorization") {
     composable("authorization") {
-      Authorization { role -> navController.navigate(role.toString()) }
+      Authorization { role -> navController.navigate(role.toString()) { popUpTo("") } }
     }
     navigation(route = ADMIN.toString(), startDestination = "") {
     }
