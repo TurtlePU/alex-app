@@ -14,7 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.msys.alexapp.components.Authorization
-import com.msys.alexapp.components.AuthorizationCallback
+import com.msys.alexapp.components.AuthorizationService
 import com.msys.alexapp.components.Carousel
 import com.msys.alexapp.services.Role
 import com.msys.alexapp.ui.theme.AlexAppTheme
@@ -47,7 +47,7 @@ fun AlexAppService.NavComposable() {
   val navController = rememberNavController()
   NavHost(navController = navController, startDestination = "authorization") {
     composable("authorization") {
-      object : AuthorizationCallback {
+      object : AuthorizationService {
         override fun become(role: Role) = navController.navigate("carousel")
         override suspend fun signIn(email: String, password: String) {
           this@NavComposable.signIn(email, password)
