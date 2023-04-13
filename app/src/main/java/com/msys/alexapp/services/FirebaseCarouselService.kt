@@ -13,15 +13,17 @@ import kotlinx.coroutines.tasks.await
 
 class FirebaseCarouselService(private val stageID: String) : CarouselService {
   companion object {
-    val data: DatabaseReference get() = FirebaseDatabase.getInstance().getReference("data")
-    val jury: DatabaseReference get() = data.child(currentUID)
+    private val data: DatabaseReference get() = FirebaseDatabase.getInstance().getReference("data")
+    private val jury: DatabaseReference get() = data.child(currentUID)
   }
 
   private val stage: DatabaseReference get() = data.child(stageID)
   override val canComment: Flow<Boolean>
     get() = stage.child("comment").snapshots.map { it.exists() && it.value == true }
-  override val currentPerformance: Flow<Performance>
-    get() = stage.child("current").snapshots.map { it.children.first().asPerformance }
+  override val currentPerformance: Flow<Performance?>
+    get() = stage.child("current").snapshots.map { it.children.firstOrNull()?.asPerformance }
+  override val performanceCount: Flow<Long>
+    get() = stage.child("count").snapshots.map { it.getValue<Long>()!! }
 
   override fun isEvaluated(id: String): Flow<Boolean> = jury.child(id).snapshots.map { it.exists() }
 

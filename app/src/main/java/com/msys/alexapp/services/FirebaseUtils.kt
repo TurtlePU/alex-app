@@ -30,7 +30,6 @@ suspend fun DatabaseReference.chooseFriends(myRole: Role, emails: List<String>) 
 val DataSnapshot.asPerformance: Performance
   get() = Performance(
     id = key!!,
-    index = child("index").getValue<Long>()!!,
     name = child("name").getValue<String>()!!,
     performance = child("performance").getValue<String>()!!,
     city = child("city").getValue<String>(),

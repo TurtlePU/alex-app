@@ -56,6 +56,7 @@ fun DefaultPreview() {
       override fun invitationsFrom(role: Role) = flowOf(listOf("wow"))
       override fun carouselService(stageID: String) = object : CarouselService {
         override val currentPerformance: Flow<Performance> get() = flowOf()
+        override val performanceCount: Flow<Long> get() = flowOf()
         override val canComment: Flow<Boolean> = flowOf(true)
         override fun isEvaluated(id: String): Flow<Boolean> = flowOf(false)
         override suspend fun sendInvitation() {}

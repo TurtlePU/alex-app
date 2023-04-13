@@ -2,7 +2,6 @@ package com.msys.alexapp.data
 
 data class Performance(
   val id: String,
-  val index: Long,
   val name: String,
   val performance: String,
   val city: String?,

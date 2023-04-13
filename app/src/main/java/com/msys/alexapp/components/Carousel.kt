@@ -18,7 +18,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 interface CarouselService {
-  val currentPerformance: Flow<Performance>
+  val currentPerformance: Flow<Performance?>
+  val performanceCount: Flow<Long>
   val canComment: Flow<Boolean>
   fun isEvaluated(id: String): Flow<Boolean>
   suspend fun sendInvitation()
@@ -37,7 +38,8 @@ fun CarouselService.Carousel() {
       Text(text = stringResource(R.string.rated_performance))
     } else {
       val canComment by this.canComment.collectAsState(initial = false)
-      PerformancePage(it, canComment) { rating, comment ->
+      val index by performanceCount.collectAsState(initial = 0)
+      PerformancePage(it, index, canComment) { rating, comment ->
         evaluate(it.id, rating, comment)
       }
     }
@@ -47,6 +49,7 @@ fun CarouselService.Carousel() {
 @Composable
 fun PerformancePage(
   performance: Performance,
+  index: Long,
   canComment: Boolean,
   evaluate: suspend (Double, String?) -> Unit
 ) {
@@ -55,7 +58,7 @@ fun PerformancePage(
   val report: (String?) -> Unit = { comment ->
     rating?.let { rating -> scope.launch { evaluate(rating, comment) } }
   }
-  performance.View {
+  performance.View(index) {
     RatingPad(rating) { rating = it }
     if (canComment) {
       CommentSection(report)
@@ -125,7 +128,6 @@ fun CommentSection(sendComment: (String?) -> Unit) {
 
 private val example = Performance(
   id = "0",
-  index = 0,
   name = "Android",
   city = "New York",
   category = "II",
@@ -140,6 +142,7 @@ fun PagePreview(canComment: Boolean = true) {
   AlexAppTheme {
     PerformancePage(
       performance = example,
+      index = 0,
       canComment = canComment,
     ) { _, _ -> }
   }

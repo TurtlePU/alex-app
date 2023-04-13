@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 import com.msys.alexapp.data.Performance
 
 @Composable
-fun Performance.View(content: @Composable ColumnScope.() -> Unit) {
+fun Performance.View(index: Long, content: @Composable ColumnScope.() -> Unit) {
   Column(
     modifier = Modifier.fillMaxSize(),
     verticalArrangement = Arrangement.SpaceEvenly,
