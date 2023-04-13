@@ -1,5 +1,6 @@
 package com.msys.alexapp.services
 
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
@@ -19,15 +20,16 @@ data class Performance(
 )
 
 object PerformanceRepo {
-  private val performances: DatabaseReference =
-    FirebaseDatabase.getInstance().getReference("performances")
+  private val userID: String get() = FirebaseAuth.getInstance().uid!!
+  private val performances: DatabaseReference
+    get() = FirebaseDatabase.getInstance().getReference("performances")
 
   private fun child(performanceId: String): DatabaseReference = performances.child(performanceId)
 
-  private fun rating(performanceId: String, userID: String): DatabaseReference =
+  private fun rating(performanceId: String): DatabaseReference =
     child(performanceId).child("ratings/$userID")
 
-  private fun comment(performanceId: String, userID: String): DatabaseReference =
+  private fun comment(performanceId: String): DatabaseReference =
     child(performanceId).child("comments/$userID")
 
   private operator fun DataSnapshot.get(key: String): String? = child(key).getValue<String>()
@@ -46,17 +48,17 @@ object PerformanceRepo {
     )
   }
 
-  fun getRating(performanceId: String, userID: String): Flow<Double?> =
-    rating(performanceId, userID).snapshots.map { it.getValue<Double>() }
+  fun getRating(performanceId: String): Flow<Double?> =
+    rating(performanceId).snapshots.map { it.getValue<Double>() }
 
-  suspend fun rate(performanceId: String, userID: String, rating: Double) {
-    rating(performanceId, userID).setValue(rating).await()
+  suspend fun rate(performanceId: String, rating: Double) {
+    rating(performanceId).setValue(rating).await()
   }
 
-  fun getComment(performanceId: String, userID: String): Flow<String?> =
-    comment(performanceId, userID).snapshots.map { it.getValue<String>() }
+  fun getComment(performanceId: String): Flow<String?> =
+    comment(performanceId).snapshots.map { it.getValue<String>() }
 
-  suspend fun comment(performanceId: String, userID: String, comment: String) {
-    comment(performanceId, userID).setValue(comment).await()
+  suspend fun comment(performanceId: String, comment: String) {
+    comment(performanceId).setValue(comment).await()
   }
 }

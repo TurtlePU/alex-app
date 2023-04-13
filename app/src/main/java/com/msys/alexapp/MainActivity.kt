@@ -39,14 +39,15 @@ fun NavComposable() {
   NavHost(navController = navController, startDestination = "authorization") {
     composable("authorization") {
       object : AuthorizationCallback {
-        override fun reportJuryID(uid: String) = navController.navigate("carousel/$uid")
-        override fun reportStageID(uid: String) = navController.navigate("carousel/$uid")
-        override suspend fun signIn(email: String, password: String) =
-          FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password).await().user!!.uid
+        override fun becomeJury() = navController.navigate("carousel")
+        override fun becomeStage() = navController.navigate("carousel")
+        override suspend fun signIn(email: String, password: String) {
+          FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password).await()
+        }
       }.Authorization()
     }
-    composable("carousel/{userID}") { backStackEntry ->
-      Carousel(backStackEntry.arguments!!.getString("userID")!!)
+    composable("carousel") {
+      Carousel()
     }
   }
 }

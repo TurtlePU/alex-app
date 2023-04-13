@@ -23,15 +23,15 @@ import kotlinx.coroutines.flow.flowOf
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
-fun Carousel(userID: String) {
+fun Carousel() {
   val pageKeys by PerformanceRepo.listFlow.collectAsState(initial = listOf())
   PerformancePager(
     pageKeys = pageKeys,
     performances = { PerformanceRepo[it] },
-    ratings = { PerformanceRepo.getRating(it, userID) },
-    comments = { PerformanceRepo.getComment(it, userID) },
-    rate = { performanceID, rating -> PerformanceRepo.rate(performanceID, userID, rating) },
-    comment = { performanceID, comment -> PerformanceRepo.comment(performanceID, userID, comment) },
+    ratings = { PerformanceRepo.getRating(it) },
+    comments = { PerformanceRepo.getComment(it) },
+    rate = { performanceID, rating -> PerformanceRepo.rate(performanceID, rating) },
+    comment = { performanceID, comment -> PerformanceRepo.comment(performanceID, comment) },
   )
 }
 
