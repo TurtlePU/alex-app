@@ -24,10 +24,14 @@ fun AlexAppService.NavComposable() {
     }
     composable("start/admin") {}
     composable("start/stage") {
-      Invitations(invitationsFrom(ADMIN))
+      Invitations(invitationsFrom(ADMIN)) { id ->
+        navController.navigate("carousel/stage/$id")
+      }
     }
     composable("start/jury") {
-      Invitations(invitationsFrom(STAGE))
+      Invitations(invitationsFrom(STAGE)) { id ->
+        navController.navigate("carousel/jury/$id")
+      }
     }
     composable("carousel") {
       Carousel()
