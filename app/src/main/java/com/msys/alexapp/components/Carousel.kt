@@ -1,8 +1,12 @@
 package com.msys.alexapp.components
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.StarRate
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -54,18 +58,26 @@ fun PerformancePage(
   evaluate: suspend (Double, String?) -> Unit
 ) {
   var rating: Double? by rememberSaveable { mutableStateOf(null) }
+  var comment: String? by rememberSaveable { mutableStateOf(null) }
   val scope = rememberCoroutineScope()
-  val report: (String?) -> Unit = { comment ->
-    rating?.let { rating -> scope.launch { evaluate(rating, comment) } }
-  }
-  performance.View(index) {
+  performance.View(
+    index = index,
+    floatingActionButton = {
+      if (rating != null) {
+        FloatingActionButton(
+          onClick = { scope.launch { evaluate(rating!!, comment) } },
+        ) {
+          Icon(
+            imageVector = Icons.Filled.StarRate,
+            contentDescription = stringResource(R.string.rate_button),
+          )
+        }
+      }
+    }
+  ) {
     RatingPad(rating) { rating = it }
     if (canComment) {
-      CommentSection(report)
-    } else {
-      OutlinedButton(onClick = { report(null) }) {
-        Text(text = stringResource(R.string.rate_button))
-      }
+      CommentSection(comment ?: "") { comment = it }
     }
   }
 }
@@ -113,16 +125,14 @@ fun RatingButton(
 }
 
 @Composable
-fun CommentSection(sendComment: (String?) -> Unit) {
-  var comment: String? by rememberSaveable { mutableStateOf(null) }
+fun CommentSection(value: String, onValueChange: (String) -> Unit) {
   TextField(
-    value = comment ?: "",
-    onValueChange = { comment = it },
+    value = value,
+    onValueChange = onValueChange,
     modifier = Modifier
       .padding(vertical = 5.dp)
       .fillMaxWidth(),
     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-    keyboardActions = KeyboardActions(onDone = { sendComment(comment) }),
   )
 }
 
