@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.msys.alexapp.data.Role
 import com.msys.alexapp.data.Role.*
@@ -20,21 +21,23 @@ fun AlexAppService.NavComposable() {
   val navController = rememberNavController()
   NavHost(navController = navController, startDestination = "authorization") {
     composable("authorization") {
-      Authorization { role -> navController.navigate("start/$role") }
+      Authorization { role -> navController.navigate(role.toString()) }
     }
-    composable("start/admin") {}
-    composable("start/stage") {
-      Invitations(invitationsFrom(ADMIN)) { id ->
-        navController.navigate("carousel/stage/$id")
+    navigation(route = ADMIN.toString(), startDestination = "") {
+    }
+    navigation(route = STAGE.toString(), startDestination = "invitations") {
+      composable("invitations") {
+        Invitations(invitationsFrom(ADMIN)) { id ->
+          navController.navigate("list/$id")
+        }
       }
     }
-    composable("start/jury") {
-      Invitations(invitationsFrom(STAGE)) { id ->
-        navController.navigate("carousel/jury/$id")
+    navigation(route = JURY.toString(), startDestination = "invitations") {
+      composable("invitations") {
+        Invitations(invitationsFrom(STAGE)) { id ->
+          navController.navigate("carousel/$id")
+        }
       }
-    }
-    composable("carousel") {
-      Carousel()
     }
   }
 }
