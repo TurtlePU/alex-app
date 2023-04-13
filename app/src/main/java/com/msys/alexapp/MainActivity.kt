@@ -27,22 +27,30 @@ class MainActivity : ComponentActivity() {
       AlexAppTheme {
         // A surface container using the 'background' color from the theme
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-          NavComposable()
+          object : AlexAppService {
+            override suspend fun signIn(email: String, password: String) {
+              FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password).await()
+            }
+          }.NavComposable()
         }
       }
     }
   }
 }
 
+interface AlexAppService {
+  suspend fun signIn(email: String, password: String)
+}
+
 @Composable
-fun NavComposable() {
+fun AlexAppService.NavComposable() {
   val navController = rememberNavController()
   NavHost(navController = navController, startDestination = "authorization") {
     composable("authorization") {
       object : AuthorizationCallback {
         override fun become(role: Role) = navController.navigate("carousel")
         override suspend fun signIn(email: String, password: String) {
-          FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password).await()
+          this@NavComposable.signIn(email, password)
         }
       }.Authorization()
     }
@@ -56,6 +64,8 @@ fun NavComposable() {
 @Composable
 fun DefaultPreview() {
   AlexAppTheme {
-    NavComposable()
+    object : AlexAppService {
+      override suspend fun signIn(email: String, password: String) {}
+    }.NavComposable()
   }
 }
