@@ -1,18 +1,26 @@
 package com.msys.alexapp.components
 
+import android.icu.util.Calendar
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.msys.alexapp.data.Performance
+import kotlinx.coroutines.delay
+import java.util.*
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
 
 @Composable
 fun Performance.View(
   index: Long,
+  deadline: Date,
   floatingActionButton: @Composable () -> Unit = {},
   content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -25,6 +33,7 @@ fun Performance.View(
         .padding(padding),
       verticalArrangement = Arrangement.SpaceEvenly,
     ) {
+      Timeout(deadline)
       Row(
         modifier = Modifier
           .fillMaxWidth()
@@ -56,5 +65,22 @@ fun Performance.View(
     }
   }
 }
+
+@Composable
+fun Timeout(deadline: Date) {
+  var time by remember { mutableStateOf(currentDate()) }
+  LaunchedEffect(true) {
+    while (true) {
+      time = currentDate()
+      delay(1000.milliseconds)
+    }
+  }
+  val progress = (1f * (deadline.time - time.time) / timeout.inWholeMilliseconds).coerceIn(0f, 1f)
+  LinearProgressIndicator(progress = progress)
+}
+
+fun currentDate(): Date = Calendar.getInstance().time
+
+val timeout: Duration = 5.minutes
 
 val String.firstWord: String get() = this.trim().split(' ').first()

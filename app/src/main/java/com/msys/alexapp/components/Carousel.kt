@@ -20,11 +20,13 @@ import com.msys.alexapp.data.Performance
 import com.msys.alexapp.ui.theme.AlexAppTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import java.util.*
 
 interface CarouselService {
   val currentPerformance: Flow<Performance?>
   val performanceCount: Flow<Long>
   val canComment: Flow<Boolean>
+  val deadline: Flow<Date>
   fun isEvaluated(id: String): Flow<Boolean>
   suspend fun sendInvitation()
   suspend fun evaluate(id: String, rating: Double, comment: String?)
@@ -43,7 +45,8 @@ fun CarouselService.Carousel() {
     } else {
       val canComment by this.canComment.collectAsState(initial = false)
       val index by performanceCount.collectAsState(initial = 0)
-      PerformancePage(it, index, canComment) { rating, comment ->
+      val deadline by this.deadline.collectAsState(initial = Date())
+      PerformancePage(it, index, deadline, canComment) { rating, comment ->
         evaluate(it.id, rating, comment)
       }
     }
@@ -54,6 +57,7 @@ fun CarouselService.Carousel() {
 fun PerformancePage(
   performance: Performance,
   index: Long,
+  deadline: Date,
   canComment: Boolean,
   evaluate: suspend (Double, String?) -> Unit
 ) {
@@ -62,6 +66,7 @@ fun PerformancePage(
   val scope = rememberCoroutineScope()
   performance.View(
     index = index,
+    deadline = deadline,
     floatingActionButton = {
       if (rating != null) {
         FloatingActionButton(
@@ -153,6 +158,7 @@ fun PagePreview(canComment: Boolean = true) {
     PerformancePage(
       performance = example,
       index = 0,
+      deadline = Date(Date().time + timeout.inWholeMilliseconds),
       canComment = canComment,
     ) { _, _ -> }
   }

@@ -10,6 +10,7 @@ import com.msys.alexapp.data.Role
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
+import java.util.*
 
 class FirebaseCarouselService(private val stageID: String) : CarouselService {
   companion object {
@@ -18,12 +19,14 @@ class FirebaseCarouselService(private val stageID: String) : CarouselService {
   }
 
   private val stage: DatabaseReference get() = data.child(stageID)
-  override val canComment: Flow<Boolean>
-    get() = stage.child("comment").snapshots.map { it.exists() && it.value == true }
   override val currentPerformance: Flow<Performance?>
     get() = stage.child("current").snapshots.map { it.children.firstOrNull()?.asPerformance }
   override val performanceCount: Flow<Long>
     get() = stage.child("count").snapshots.map { it.getValue<Long>()!! }
+  override val canComment: Flow<Boolean>
+    get() = stage.child("comment").snapshots.map { it.exists() && it.value == true }
+  override val deadline: Flow<Date>
+    get() = stage.child("deadline").snapshots.map { Date(it.getValue<Long>()!!) }
 
   override fun isEvaluated(id: String): Flow<Boolean> = jury.child(id).snapshots.map { it.exists() }
 
