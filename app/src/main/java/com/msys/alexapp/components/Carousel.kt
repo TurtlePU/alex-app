@@ -13,8 +13,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.msys.alexapp.services.Performance
-import com.msys.alexapp.services.PerformanceRepo
+import com.msys.alexapp.repo.Performance
+import com.msys.alexapp.repo.PerformanceRepo
 import com.msys.alexapp.ui.theme.AlexAppTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow

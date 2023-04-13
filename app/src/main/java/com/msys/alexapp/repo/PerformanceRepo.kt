@@ -1,4 +1,4 @@
-package com.msys.alexapp.services
+package com.msys.alexapp.repo
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot

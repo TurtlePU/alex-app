@@ -16,7 +16,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.msys.alexapp.components.Authorization
 import com.msys.alexapp.components.AuthorizationService
 import com.msys.alexapp.components.Carousel
-import com.msys.alexapp.services.Role
+import com.msys.alexapp.repo.Role
 import com.msys.alexapp.ui.theme.AlexAppTheme
 import kotlinx.coroutines.tasks.await
 
