@@ -24,7 +24,9 @@ fun AlexAppService.NavComposable() {
   val navController = rememberNavController()
   NavHost(navController = navController, startDestination = "authorization") {
     composable("authorization") {
-      Authorization { role -> navController.navigate(role.toString()) { popUpTo("") } }
+      Authorization { role ->
+        navController.navigate(role.toString()) { popUpTo("authorization") { inclusive = true } }
+      }
     }
     navigation(route = ADMIN.toString(), startDestination = "") {
     }
@@ -70,6 +72,7 @@ fun DefaultPreview() {
         override suspend fun sendInvitation() {}
         override suspend fun evaluate(id: String, rating: Double, comment: String?) {}
       }
+
       override fun stagePreparationService(adminID: String) = object : StagePreparationService {
         override val performancesFlow: Flow<List<Performance>> get() = flowOf()
         override val stagedFlow: Flow<List<String>> get() = flowOf()
