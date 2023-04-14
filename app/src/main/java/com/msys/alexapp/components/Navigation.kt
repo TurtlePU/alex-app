@@ -45,7 +45,9 @@ fun AlexAppService.NavComposable() {
       composable("list/{adminID}") { backStack ->
         val adminID = backStack.arguments!!.getString("adminID")!!
         stagePreparationService(adminID).PerformanceList {
-          navController.navigate("stage/$adminID")
+          navController.navigate("stage/$adminID") {
+            restoreState = true
+          }
         }
       }
       composable("stage/{adminID}") { backStack ->
