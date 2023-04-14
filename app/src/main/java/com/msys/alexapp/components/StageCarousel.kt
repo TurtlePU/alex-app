@@ -1,5 +1,6 @@
 package com.msys.alexapp.components
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.NavigateNext
@@ -108,4 +109,10 @@ fun FinishButton(enabled: Boolean, onClick: () -> Unit) {
 
 @Composable
 fun FinishStage(finishStage: () -> Unit) {
+  Column {
+    Text(text = stringResource(R.string.no_performance))
+    Button(onClick = finishStage) {
+      Text(text = stringResource(R.string.back_to_list))
+    }
+  }
 }

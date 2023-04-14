@@ -11,4 +11,5 @@
     <string name="cancel_new_performance">Не добавлять</string>
     <string name="next_performance">Следующее выступление</string>
     <string name="finish_stage">Завершить этап</string>
+    <string name="back_to_list">Назад к выбору участников</string>
 </resources>
