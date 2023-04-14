@@ -7,4 +7,6 @@
     <string name="no_performance">Перерыв</string>
     <string name="rated_performance">Выступление уже оценено\nСредняя оценка: %1$.2f</string>
     <string name="start_stage">Начать этап</string>
+    <string name="add_performance">Добавить выступление</string>
+    <string name="cancel_new_performance">Не добавлять</string>
 </resources>

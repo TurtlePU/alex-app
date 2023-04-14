@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Start
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -76,11 +79,63 @@ fun StageService.PerformanceList(startStage: () -> Unit) {
           }
         }
       }
-      item { NewPerformance { newPerformance(it) } }
+      item {
+        val initialID = performances.maxOfOrNull { it.id.toLong() + 1 } ?: 0
+        NewPerformance(initialID) { newPerformance(it) }
+      }
     }
   }
 }
 
 @Composable
-fun NewPerformance(send: suspend (Performance) -> Unit) {
+fun NewPerformance(initialID: Long, send: suspend (Performance) -> Unit) {
+  var isDraft by rememberSaveable { mutableStateOf(false) }
+  if (isDraft) {
+    var id: Long? by rememberSaveable { mutableStateOf(initialID) }
+    var name: String? by rememberSaveable { mutableStateOf(null) }
+    var performance: String? by rememberSaveable { mutableStateOf(null) }
+    val scope = rememberCoroutineScope()
+    Row {
+      Text(text = "#")
+      TextField(value = id?.toString() ?: "", onValueChange = { id = it.toLongOrNull() })
+      TextField(value = name ?: "", onValueChange = { name = it })
+      TextField(value = performance ?: "", onValueChange = { performance = it })
+      IconButton(
+        onClick = {
+          scope.launch {
+            send(anonymousPerformance(id!!, name!!, performance!!))
+            isDraft = false
+          }
+        },
+        enabled = (id?.let { it >= initialID } ?: false) && name != null && performance != null
+      ) {
+        Icon(
+          imageVector = Icons.Filled.Check,
+          contentDescription = stringResource(R.string.add_performance),
+        )
+      }
+      IconButton(onClick = { isDraft = false }) {
+        Icon(
+          imageVector = Icons.Filled.Cancel,
+          contentDescription = stringResource(R.string.cancel_new_performance),
+        )
+      }
+    }
+  } else {
+    IconButton(
+      onClick = { isDraft = true },
+    ) {
+      Icon(
+        imageVector = Icons.Filled.Add,
+        contentDescription = stringResource(R.string.add_performance),
+      )
+    }
+  }
 }
+
+fun anonymousPerformance(id: Long, name: String, performance: String) = Performance(
+  id = id.toString(),
+  name = name,
+  performance = performance,
+  null, null, null, null
+)
