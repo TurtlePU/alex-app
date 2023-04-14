@@ -31,6 +31,11 @@ class FirebaseStageService(adminID: String) : FirebaseStageServiceBase(adminID),
       } ?: flowOf(null)
     }
 
+  override val nextStagedPerformance: Flow<String?>
+    get() = staged.orderByKey().limitToFirst(2).snapshots.map {
+      it.children.drop(1).firstOrNull()?.let { child -> child.getValue<String>()!! }
+    }
+
   override suspend fun sendAdvice(advice: Advice) {
     stage.child("advice").setValue(advice.toMap()).await()
   }
