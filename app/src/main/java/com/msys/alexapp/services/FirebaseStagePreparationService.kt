@@ -4,7 +4,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.database.ktx.snapshots
-import com.msys.alexapp.components.StageService
+import com.msys.alexapp.components.StagePreparationService
 import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.Role
 import kotlinx.coroutines.flow.Flow
@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.zip
 import kotlinx.coroutines.tasks.await
 
-class FirebaseStageService(private val adminID: String) : StageService {
+class FirebaseStagePreparationService(private val adminID: String) : StagePreparationService {
   companion object {
     private val stage: DatabaseReference get() = data.child(currentUID)
     private val staged: DatabaseReference get() = stage.child("stage")

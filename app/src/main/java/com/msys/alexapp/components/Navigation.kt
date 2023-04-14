@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.flowOf
 interface AlexAppService : AuthorizationService {
   fun invitationsFrom(role: Role): Flow<List<String>>
   fun juryService(stageID: String): JuryService
-  fun stageService(adminID: String): StageService
+  fun stagePreparationService(adminID: String): StagePreparationService
 }
 
 @Composable
@@ -36,7 +36,7 @@ fun AlexAppService.NavComposable() {
       }
       composable("list/{adminID}") { backStack ->
         val adminID = backStack.arguments!!.getString("adminID")!!
-        stageService(adminID).PerformanceList {
+        stagePreparationService(adminID).PerformanceList {
           navController.navigate("stage/$adminID")
         }
       }
@@ -70,7 +70,7 @@ fun DefaultPreview() {
         override suspend fun sendInvitation() {}
         override suspend fun evaluate(id: String, rating: Double, comment: String?) {}
       }
-      override fun stageService(adminID: String) = object : StageService {
+      override fun stagePreparationService(adminID: String) = object : StagePreparationService {
         override val performancesFlow: Flow<List<Performance>> get() = flowOf()
         override val stagedFlow: Flow<List<String>> get() = flowOf()
         override suspend fun sendInvitations() {}

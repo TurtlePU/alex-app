@@ -23,7 +23,7 @@ import com.msys.alexapp.data.Performance
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
-interface StageService {
+interface StagePreparationService {
   val performancesFlow: Flow<List<Performance>>
   val stagedFlow: Flow<List<String>>
   suspend fun sendInvitations()
@@ -32,7 +32,7 @@ interface StageService {
 }
 
 @Composable
-fun StageService.PerformanceList(startStage: () -> Unit) {
+fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
   var ready by rememberSaveable { mutableStateOf(false) }
   LaunchedEffect(true) {
     sendInvitations()
