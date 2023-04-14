@@ -35,7 +35,9 @@ class FirebaseStageService(private val adminID: String) : StageService {
 
   override suspend fun sendInvitations() {
     val contacts = admin.child("contacts").get().await()
+    val task = stage.child("contacts").setValue(contacts.getValue<Map<String, String>>()!!)
     stage.chooseFriends(Role.STAGE, contacts.children.map { it.getValue<String>()!! })
+    task.await()
   }
 
   override suspend fun newPerformance(performance: Performance) {
