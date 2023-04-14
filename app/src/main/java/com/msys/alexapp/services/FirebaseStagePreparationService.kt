@@ -12,18 +12,15 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.zip
 import kotlinx.coroutines.tasks.await
 
-class FirebaseStagePreparationService(private val adminID: String) : StagePreparationService {
+class FirebaseStagePreparationService(adminID: String) : FirebaseStageServiceBase(adminID),
+  StagePreparationService {
   companion object {
-    private val stage: DatabaseReference get() = data.child(currentUID)
-    private val staged: DatabaseReference get() = stage.child("stage")
-
     private val DatabaseReference.performances: Flow<List<Performance>>
       get() = child("performances").snapshots.map {
         it.children.map(DataSnapshot::asPerformance)
       }
   }
 
-  private val admin: DatabaseReference get() = data.child(adminID)
   override val performancesFlow: Flow<List<Performance>>
     get() = admin.performances.zip(stage.performances) { a, b -> a + b }
   override val stagedFlow: Flow<List<String>>

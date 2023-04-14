@@ -1,23 +1,35 @@
 package com.msys.alexapp.services
 
+import com.google.firebase.database.ktx.getValue
+import com.google.firebase.database.ktx.snapshots
 import com.msys.alexapp.components.StageService
 import com.msys.alexapp.data.Advice
 import com.msys.alexapp.data.Performance
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.tasks.await
 
-class FirebaseStageService(private val adminID: String) : StageService {
+class FirebaseStageService(adminID: String) : FirebaseStageServiceBase(adminID), StageService {
   override val stagedFlow: Flow<Map<Long, String>>
-    get() = TODO("Not yet implemented")
+    get() = staged.snapshots.map {
+      it.children.associate { child -> child.key!!.toLong() to child.getValue<String>()!! }
+    }
 
-  override fun performance(id: String): Flow<Performance> {
-    TODO("Not yet implemented")
-  }
+  @OptIn(ExperimentalCoroutinesApi::class)
+  override fun performance(id: String): Flow<Performance> =
+    stage.child("performances/$id").snapshots.flatMapLatest { fromStage ->
+      if (fromStage.exists()) flowOf(fromStage.asPerformance)
+      else admin.child("performances/$id").snapshots.map { it.asPerformance }
+    }
 
   override suspend fun sendAdvice(advice: Advice) {
-    TODO("Not yet implemented")
+    stage.child("advice").setValue(advice.toMap()).await()
   }
 
   override suspend fun setCurrent(performance: Performance) {
-    TODO("Not yet implemented")
+    stage.child("current").setValue(mapOf(performance.id to performance.toMap())).await()
   }
 }
