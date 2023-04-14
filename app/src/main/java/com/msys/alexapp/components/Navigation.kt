@@ -17,6 +17,7 @@ interface AlexAppService : AuthorizationService {
   fun invitationsFrom(role: Role): Flow<List<String>>
   fun juryService(stageID: String): JuryService
   fun stagePreparationService(adminID: String): StagePreparationService
+  fun stageService(adminID: String): StageService
 }
 
 @Composable
@@ -42,7 +43,9 @@ fun AlexAppService.NavComposable() {
           navController.navigate("stage/$adminID")
         }
       }
-      composable("stage/{adminID}") {}
+      composable("stage/{adminID}") { backStack ->
+        stageService(backStack.arguments!!.getString("adminID")!!).Carousel()
+      }
     }
     navigation(route = JURY.toString(), startDestination = "invitations") {
       composable("invitations") {
@@ -79,6 +82,9 @@ fun DefaultPreview() {
         override suspend fun sendInvitations() {}
         override suspend fun newPerformance(performance: Performance) {}
         override suspend fun appendToStage(stage: List<String>) {}
+      }
+
+      override fun stageService(adminID: String) = object : StageService {
       }
     }.NavComposable()
   }
