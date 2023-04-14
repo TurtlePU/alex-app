@@ -4,10 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.NavigateNext
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -39,8 +36,11 @@ fun StageService.PerformanceDashboard(performance: Performance, finishStage: () 
   LaunchedEffect(true) { setCurrent(performance, Date(deadline)) }
   val canComment by canCommentFlow.collectAsStateWithLifecycle(initialValue = false)
   LaunchedEffect(canComment) { setCanComment(canComment) }
+  var averageRating: Double? by rememberSaveable { mutableStateOf(null) }
+  val comments = rememberSaveable { mutableStateMapOf<String, String>() }
   performance.View(
     deadline = Date(deadline),
+    bottomBar = { RatingBar(averageRating) },
     floatingActionButton = {
       val finishPerformance: suspend () -> Unit = { /*TODO*/ }
       val enabled = true
@@ -50,8 +50,19 @@ fun StageService.PerformanceDashboard(performance: Performance, finishStage: () 
         ?: FinishButton(enabled) { scope.launch { finishPerformance(); finishStage() } }
     }
   ) {
-    /*TODO*/
+    JuryRow({ averageRating = it }) { jury, comment -> comments[jury] = comment }
   }
+}
+
+@Composable
+fun RatingBar(averageRating: Double?) {
+}
+
+@Composable
+fun StageService.JuryRow(
+  sendAverage: (Double) -> Unit,
+  sendComment: (String, String) -> Unit,
+) {
 }
 
 @Composable

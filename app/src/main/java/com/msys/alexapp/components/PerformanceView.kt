@@ -21,10 +21,12 @@ import kotlin.time.Duration.Companion.minutes
 @Composable
 fun Performance.View(
   deadline: Date,
+  bottomBar: @Composable () -> Unit = {},
   floatingActionButton: @Composable () -> Unit = {},
   content: @Composable ColumnScope.() -> Unit,
 ) {
   Scaffold(
+    bottomBar = bottomBar,
     floatingActionButton = floatingActionButton,
   ) { padding ->
     Column(
