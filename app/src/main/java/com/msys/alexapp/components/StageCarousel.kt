@@ -10,12 +10,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
 import com.msys.alexapp.data.Performance
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import java.util.*
 
 interface StageService {
@@ -28,40 +30,53 @@ interface StageService {
 
 @Composable
 fun StageService.Carousel(finishStage: () -> Unit) {
-  val performance by firstStagedPerformance.collectAsStateWithLifecycle(initialValue = null)
-  performance?.let {
-    val deadline = rememberSaveable { currentDate().time + timeout.inWholeMilliseconds }
-    LaunchedEffect(true) { setCurrent(it, Date(deadline)) }
-    val canComment by canCommentFlow.collectAsStateWithLifecycle(initialValue = false)
-    LaunchedEffect(canComment) { setCanComment(canComment) }
-    it.View(
-      deadline = Date(deadline),
-      floatingActionButton = {
-        val nextID by nextStagedPerformance.collectAsStateWithLifecycle(initialValue = null)
-        val finishPerformance: () -> Unit = { /*TODO*/ }
-        nextID?.let { id ->
-          ExtendedFloatingActionButton(
-            text = { Text(text = id) },
-            icon = {
-              Icon(
-                imageVector = Icons.Filled.NavigateNext,
-                contentDescription = stringResource(R.string.next_performance),
-              )
-            },
-            onClick = finishPerformance,
-          )
-        }
-          ?: FloatingActionButton(onClick = { finishPerformance(); finishStage() }) {
-            Icon(
-              imageVector = Icons.Filled.Check,
-              contentDescription = stringResource(R.string.finish_stage),
-            )
-          }
-      }
-    ) {
-      /*TODO*/
+  firstStagedPerformance.collectAsStateWithLifecycle(initialValue = null).value
+    ?.let { PerformanceDashboard(it, finishStage) }
+    ?: FinishStage(finishStage)
+}
+
+@Composable
+fun StageService.PerformanceDashboard(performance: Performance, finishStage: () -> Unit) {
+  val deadline = rememberSaveable { currentDate().time + timeout.inWholeMilliseconds }
+  LaunchedEffect(true) { setCurrent(performance, Date(deadline)) }
+  val canComment by canCommentFlow.collectAsStateWithLifecycle(initialValue = false)
+  LaunchedEffect(canComment) { setCanComment(canComment) }
+  performance.View(
+    deadline = Date(deadline),
+    floatingActionButton = {
+      val finishPerformance: suspend () -> Unit = { /*TODO*/ }
+      val scope = rememberCoroutineScope()
+      nextStagedPerformance.collectAsStateWithLifecycle(initialValue = null).value
+        ?.let { id -> NextButton(id) { scope.launch { finishPerformance() } } }
+        ?: FinishButton { scope.launch { finishPerformance(); finishStage() } }
     }
-  } ?: FinishStage(finishStage)
+  ) {
+    /*TODO*/
+  }
+}
+
+@Composable
+fun NextButton(id: String, onClick: () -> Unit) {
+  ExtendedFloatingActionButton(
+    text = { Text(text = id) },
+    icon = {
+      Icon(
+        imageVector = Icons.Filled.NavigateNext,
+        contentDescription = stringResource(R.string.next_performance),
+      )
+    },
+    onClick = onClick,
+  )
+}
+
+@Composable
+fun FinishButton(onClick: () -> Unit) {
+  FloatingActionButton(onClick = onClick) {
+    Icon(
+      imageVector = Icons.Filled.Check,
+      contentDescription = stringResource(R.string.finish_stage),
+    )
+  }
 }
 
 @Composable
