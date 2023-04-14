@@ -16,7 +16,7 @@ object FirebaseService : AlexAppService {
   override fun invitationsFrom(role: Role) =
     FirebaseDatabase.getInstance()
       .getReference("invitations")
-      .child(FirebaseAuth.getInstance().currentUser!!.email!!)
+      .child(currentEmail)
       .snapshots.map { data ->
         data.children.filter { it.value == role.toString() }.map { it.key!! }
       }

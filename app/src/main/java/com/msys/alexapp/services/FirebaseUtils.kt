@@ -12,6 +12,7 @@ import kotlinx.coroutines.tasks.asDeferred
 import kotlinx.coroutines.tasks.await
 
 val currentUID: String get() = FirebaseAuth.getInstance().uid!!
+val currentEmail: String get() = FirebaseAuth.getInstance().currentUser!!.email!!
 val data: DatabaseReference get() = FirebaseDatabase.getInstance().getReference("data")
 
 suspend fun DatabaseReference.chooseFriends(myRole: Role, emails: Map<String, String>) {
