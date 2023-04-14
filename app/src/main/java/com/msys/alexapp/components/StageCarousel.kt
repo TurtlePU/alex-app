@@ -3,15 +3,13 @@ package com.msys.alexapp.components
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.NavigateNext
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
@@ -45,10 +43,11 @@ fun StageService.PerformanceDashboard(performance: Performance, finishStage: () 
     deadline = Date(deadline),
     floatingActionButton = {
       val finishPerformance: suspend () -> Unit = { /*TODO*/ }
+      val enabled = true
       val scope = rememberCoroutineScope()
       nextStagedPerformance.collectAsStateWithLifecycle(initialValue = null).value
-        ?.let { id -> NextButton(id) { scope.launch { finishPerformance() } } }
-        ?: FinishButton { scope.launch { finishPerformance(); finishStage() } }
+        ?.let { id -> NextButton(id, enabled) { scope.launch { finishPerformance() } } }
+        ?: FinishButton(enabled) { scope.launch { finishPerformance(); finishStage() } }
     }
   ) {
     /*TODO*/
@@ -56,7 +55,7 @@ fun StageService.PerformanceDashboard(performance: Performance, finishStage: () 
 }
 
 @Composable
-fun NextButton(id: String, onClick: () -> Unit) {
+fun NextButton(id: String, enabled: Boolean, onClick: () -> Unit) {
   ExtendedFloatingActionButton(
     text = { Text(text = id) },
     icon = {
@@ -65,13 +64,17 @@ fun NextButton(id: String, onClick: () -> Unit) {
         contentDescription = stringResource(R.string.next_performance),
       )
     },
-    onClick = onClick,
+    onClick = { if (enabled) onClick() },
+    containerColor = if (enabled) FloatingActionButtonDefaults.containerColor else Color.Gray
   )
 }
 
 @Composable
-fun FinishButton(onClick: () -> Unit) {
-  FloatingActionButton(onClick = onClick) {
+fun FinishButton(enabled: Boolean, onClick: () -> Unit) {
+  FloatingActionButton(
+    onClick = { if (enabled) onClick() },
+    containerColor = if (enabled) FloatingActionButtonDefaults.containerColor else Color.Gray
+  ) {
     Icon(
       imageVector = Icons.Filled.Check,
       contentDescription = stringResource(R.string.finish_stage),
