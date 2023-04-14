@@ -6,7 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
-import com.msys.alexapp.data.Advice
+import com.msys.alexapp.components.Advice
 import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.Role
 import com.msys.alexapp.data.Role.*

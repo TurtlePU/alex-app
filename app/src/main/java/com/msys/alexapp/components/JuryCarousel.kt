@@ -17,11 +17,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
-import com.msys.alexapp.data.Advice
 import com.msys.alexapp.data.Performance
 import com.msys.alexapp.ui.theme.AlexAppTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import java.util.*
+
+data class Advice(
+  val deadline: Date,
+  val canComment: Boolean = false,
+)
 
 interface JuryService {
   val currentPerformance: Flow<Performance?>

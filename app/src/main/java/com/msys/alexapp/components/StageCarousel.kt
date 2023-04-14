@@ -14,7 +14,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
-import com.msys.alexapp.data.Advice
 import com.msys.alexapp.data.Performance
 import kotlinx.coroutines.flow.Flow
 import java.util.*
@@ -23,18 +22,18 @@ interface StageService {
   val canCommentFlow: Flow<Boolean>
   val firstStagedPerformance: Flow<Performance?>
   val nextStagedPerformance: Flow<String?>
-  suspend fun sendAdvice(advice: Advice)
-  suspend fun setCurrent(performance: Performance)
+  suspend fun setCanComment(canComment: Boolean)
+  suspend fun setCurrent(performance: Performance, deadline: Date)
 }
 
 @Composable
 fun StageService.Carousel(finishStage: () -> Unit) {
   val performance by firstStagedPerformance.collectAsStateWithLifecycle(initialValue = null)
   performance?.let {
-    LaunchedEffect(true) { setCurrent(it) }
     val deadline = rememberSaveable { currentDate().time + timeout.inWholeMilliseconds }
+    LaunchedEffect(true) { setCurrent(it, Date(deadline)) }
     val canComment by canCommentFlow.collectAsStateWithLifecycle(initialValue = false)
-    LaunchedEffect(canComment) { sendAdvice(Advice(Date(deadline), canComment)) }
+    LaunchedEffect(canComment) { setCanComment(canComment) }
     it.View(
       deadline = Date(deadline),
       floatingActionButton = {
