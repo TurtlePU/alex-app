@@ -36,7 +36,7 @@ class FirebaseJuryService(private val stageID: String) : JuryService {
 
   override suspend fun sendInvitation() {
     val contacts = stage.child("contacts").get().await()
-    jury.chooseFriends(Role.JURY, contacts.children.map { it.getValue<String>()!! })
+    jury.chooseFriends(Role.JURY, contacts.getValue<Map<String, String>>()!!)
   }
 
   override suspend fun evaluate(id: String, report: Report) {

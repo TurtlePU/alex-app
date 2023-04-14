@@ -8,22 +8,19 @@ import com.google.firebase.database.ktx.getValue
 import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.Role
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.asDeferred
 import kotlinx.coroutines.tasks.await
 
 val currentUID: String get() = FirebaseAuth.getInstance().uid!!
 val data: DatabaseReference get() = FirebaseDatabase.getInstance().getReference("data")
 
-suspend fun DatabaseReference.chooseFriends(myRole: Role, emails: List<String>) {
-  val friendTask = child("friends").setValue(emails.associateWith { "" })
-  val role = myRole.toString()
+suspend fun DatabaseReference.chooseFriends(myRole: Role, emails: Map<String, String>) {
+  val friendTask = child("friends").setValue(emails)
   emails
     .map { email ->
       FirebaseDatabase.getInstance()
-        .getReference("invitations/$email/${key!!}")
-        .setValue(role)
+        .getReference("invitations/${email.key}/${key!!}")
+        .setValue(myRole.toString())
         .asDeferred()
     }
     .awaitAll()
