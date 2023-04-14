@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
 import com.msys.alexapp.data.Performance
+import com.msys.alexapp.data.Report
 import com.msys.alexapp.ui.theme.AlexAppTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -34,7 +35,7 @@ interface JuryService {
   fun isEvaluated(id: String): Flow<Boolean>
   fun averageRating(id: String): Flow<Double?>
   suspend fun sendInvitation()
-  suspend fun evaluate(id: String, rating: Double, comment: String?)
+  suspend fun evaluate(id: String, report: Report)
 }
 
 @Composable
@@ -50,9 +51,7 @@ fun JuryService.Carousel() {
       RatingPage(rating!!)
     } else {
       val advice by juryAdvice.collectAsStateWithLifecycle(initialValue = Advice(currentDate()))
-      advice.PerformancePage(it) { rating, comment ->
-        evaluate(it.id, rating, comment)
-      }
+      advice.PerformancePage(it) { report -> evaluate(it.id, report) }
     }
   } ?: Text(text = stringResource(R.string.no_performance))
 }
@@ -65,7 +64,7 @@ fun RatingPage(rating: Double) {
 @Composable
 fun Advice.PerformancePage(
   performance: Performance,
-  evaluate: suspend (Double, String?) -> Unit
+  evaluate: suspend (Report) -> Unit
 ) {
   var rating: Double? by rememberSaveable { mutableStateOf(null) }
   var comment: String? by rememberSaveable { mutableStateOf(null) }
@@ -75,7 +74,7 @@ fun Advice.PerformancePage(
     floatingActionButton = {
       if (rating != null) {
         FloatingActionButton(
-          onClick = { scope.launch { evaluate(rating!!, comment) } },
+          onClick = { scope.launch { evaluate(Report(rating!!, comment)) } },
         ) {
           Icon(
             imageVector = Icons.Filled.StarRate,
@@ -149,7 +148,7 @@ fun CommentSection(value: String, onValueChange: (String) -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun PagePreview(advice: Advice = Advice(currentDate())) {
-  AlexAppTheme { advice.PerformancePage(example) { _, _ -> } }
+  AlexAppTheme { advice.PerformancePage(example) { } }
 }
 
 @Preview

@@ -6,6 +6,7 @@ import com.google.firebase.database.ktx.snapshots
 import com.msys.alexapp.components.Advice
 import com.msys.alexapp.components.JuryService
 import com.msys.alexapp.data.Performance
+import com.msys.alexapp.data.Report
 import com.msys.alexapp.data.Role
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -30,14 +31,15 @@ class FirebaseJuryService(private val stageID: String) : JuryService {
 
   override fun isEvaluated(id: String): Flow<Boolean> = jury.child(id).snapshots.map { it.exists() }
 
-  override fun averageRating(id: String) = averageRatingFlow(id)
+  override fun averageRating(id: String) =
+    stage.child("report/$id/average").snapshots.map { it.getValue<Double>() }
 
   override suspend fun sendInvitation() {
     val contacts = stage.child("contacts").get().await()
     jury.chooseFriends(Role.JURY, contacts.children.map { it.getValue<String>()!! })
   }
 
-  override suspend fun evaluate(id: String, rating: Double, comment: String?) {
-    jury.child(id).setValue(mapOf("rating" to rating, "comment" to comment)).await()
+  override suspend fun evaluate(id: String, report: Report) {
+    jury.child("report/$id").setValue(report.toMap()).await()
   }
 }

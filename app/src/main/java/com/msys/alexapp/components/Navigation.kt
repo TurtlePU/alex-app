@@ -6,13 +6,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
-import com.msys.alexapp.components.Advice
 import com.msys.alexapp.data.Performance
+import com.msys.alexapp.data.Report
 import com.msys.alexapp.data.Role
 import com.msys.alexapp.data.Role.*
 import com.msys.alexapp.ui.theme.AlexAppTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import java.util.*
 
 interface AlexAppService : AuthorizationService {
   fun invitationsFrom(role: Role): Flow<List<String>>
@@ -83,7 +84,7 @@ fun DefaultPreview() {
         override fun isEvaluated(id: String): Flow<Boolean> = flowOf(false)
         override fun averageRating(id: String): Flow<Double?> = flowOf(null)
         override suspend fun sendInvitation() {}
-        override suspend fun evaluate(id: String, rating: Double, comment: String?) {}
+        override suspend fun evaluate(id: String, report: Report) {}
       }
 
       override fun stagePreparationService(adminID: String) = object : StagePreparationService {
@@ -98,8 +99,15 @@ fun DefaultPreview() {
         override val canCommentFlow: Flow<Boolean> get() = flowOf()
         override val firstStagedPerformance: Flow<Performance?> get() = flowOf()
         override val nextStagedPerformance: Flow<String?> get() = flowOf()
-        override suspend fun sendAdvice(advice: Advice) {}
-        override suspend fun setCurrent(performance: Performance) {}
+        override fun reportsFlow(performanceID: String): Flow<Map<String, Report?>> = flowOf()
+        override suspend fun setCanComment(canComment: Boolean) {}
+        override suspend fun setCurrent(performance: Performance, deadline: Date) {}
+        override suspend fun sendAverageRating(performanceID: String, averageRating: Double?) {}
+        override suspend fun publishComments(
+          performanceID: String,
+          comments: Map<String, String>
+        ) {
+        }
       }
     }.NavComposable()
   }

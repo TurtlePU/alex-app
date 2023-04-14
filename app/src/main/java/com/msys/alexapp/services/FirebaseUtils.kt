@@ -30,20 +30,6 @@ suspend fun DatabaseReference.chooseFriends(myRole: Role, emails: List<String>) 
   friendTask.await()
 }
 
-fun averageRatingFlow(id: String): Flow<Double?> =
-  FirebaseService
-    .invitationsFrom(Role.JURY)
-    .map { jury ->
-      jury
-        .map { data.child("$it/$id/rating").get().asDeferred() }
-        .awaitAll()
-    }
-    .map { ratings ->
-      ratings
-        .mapNotNull { it.getValue<Double>() }
-        .run { if (isEmpty()) null else sum() / size }
-    }
-
 val DataSnapshot.asPerformance: Performance
   get() = Performance(
     id = key!!,
