@@ -48,4 +48,15 @@ class FirebaseStageService(private val adminID: String) : StageService {
         .await()
     }
   }
+
+  override suspend fun setStage(stage: List<String>) {
+    Companion.stage
+      .child("stage")
+      .setValue(
+        stage
+          .mapIndexed { i, s -> i.toString() to s }
+          .toMap()
+      )
+      .await()
+  }
 }

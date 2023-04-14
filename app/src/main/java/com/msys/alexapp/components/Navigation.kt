@@ -35,8 +35,12 @@ fun AlexAppService.NavComposable() {
         }
       }
       composable("list/{adminID}") { backStack ->
-        stageService(backStack.arguments!!.getString("adminID")!!).PerformanceList()
+        val adminID = backStack.arguments!!.getString("adminID")!!
+        stageService(adminID).PerformanceList {
+          navController.navigate("stage/$adminID")
+        }
       }
+      composable("stage/{adminID}") {}
     }
     navigation(route = JURY.toString(), startDestination = "invitations") {
       composable("invitations") {
@@ -70,6 +74,7 @@ fun DefaultPreview() {
         override val performancesFlow: Flow<List<Performance>> get() = flowOf()
         override suspend fun sendInvitations() {}
         override suspend fun newPerformance(performance: Performance) {}
+        override suspend fun setStage(stage: List<String>) {}
       }
     }.NavComposable()
   }
