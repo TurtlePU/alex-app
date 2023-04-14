@@ -45,9 +45,7 @@ class FirebaseStageService(private val adminID: String) : StageService {
   }
 
   override suspend fun appendToStage(stage: List<String>) {
-    staged.run {
-      val lastKey = get().await().children.maxOfOrNull { it.key!!.toInt() } ?: -1
-      updateChildren(stage.mapIndexed { i, s -> (lastKey + i + 1).toString() to s }.toMap())
-    }
+    val lastKey = staged.get().await().children.maxOfOrNull { it.key!!.toInt() } ?: -1
+    staged.updateChildren(stage.mapIndexed { i, s -> (lastKey + i + 1).toString() to s }.toMap())
   }
 }
