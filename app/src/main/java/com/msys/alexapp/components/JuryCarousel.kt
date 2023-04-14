@@ -66,7 +66,6 @@ fun Advice.PerformancePage(
   var comment: String? by rememberSaveable { mutableStateOf(null) }
   val scope = rememberCoroutineScope()
   performance.View(
-    index = index,
     deadline = deadline,
     floatingActionButton = {
       if (rating != null) {

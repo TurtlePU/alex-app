@@ -19,14 +19,13 @@ class FirebaseStageService(adminID: String) : FirebaseStageServiceBase(adminID),
     }
 
   @OptIn(ExperimentalCoroutinesApi::class)
-  override val firstStagedPerformance: Flow<Pair<Long, Performance>?>
+  override val firstStagedPerformance: Flow<Performance?>
     get() = staged.orderByKey().limitToFirst(1).snapshots.flatMapLatest { stagedList ->
       stagedList.children.firstOrNull()?.let { firstID ->
-        val key = firstID.key!!.toLong()
         val id = firstID.getValue<String>()!!
         admin.child("performances/$id").snapshots.flatMapLatest { fromAdmin ->
-          if (fromAdmin.exists()) flowOf(key to fromAdmin.asPerformance)
-          else stage.child("performances/$id").snapshots.map { key to it.asPerformance }
+          if (fromAdmin.exists()) flowOf(fromAdmin.asPerformance)
+          else stage.child("performances/$id").snapshots.map { it.asPerformance }
         }
       } ?: flowOf(null)
     }

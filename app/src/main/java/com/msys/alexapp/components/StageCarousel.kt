@@ -21,7 +21,7 @@ import java.util.*
 
 interface StageService {
   val canCommentFlow: Flow<Boolean>
-  val firstStagedPerformance: Flow<Pair<Long, Performance>?>
+  val firstStagedPerformance: Flow<Performance?>
   val nextStagedPerformance: Flow<String?>
   suspend fun sendAdvice(advice: Advice)
   suspend fun setCurrent(performance: Performance)
@@ -31,12 +31,11 @@ interface StageService {
 fun StageService.Carousel(finishStage: () -> Unit) {
   val performance by firstStagedPerformance.collectAsStateWithLifecycle(initialValue = null)
   performance?.let {
-    LaunchedEffect(true) { setCurrent(it.second) }
+    LaunchedEffect(true) { setCurrent(it) }
     val deadline = rememberSaveable { currentDate().time + timeout.inWholeMilliseconds }
     val canComment by canCommentFlow.collectAsStateWithLifecycle(initialValue = false)
-    LaunchedEffect(canComment) { sendAdvice(Advice(Date(deadline), it.first, canComment)) }
-    it.second.View(
-      index = it.first,
+    LaunchedEffect(canComment) { sendAdvice(Advice(Date(deadline), canComment)) }
+    it.View(
       deadline = Date(deadline),
       floatingActionButton = {
         val nextID by nextStagedPerformance.collectAsStateWithLifecycle(initialValue = null)

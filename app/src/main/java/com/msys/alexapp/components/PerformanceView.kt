@@ -20,7 +20,6 @@ import kotlin.time.Duration.Companion.minutes
 
 @Composable
 fun Performance.View(
-  index: Long,
   deadline: Date,
   floatingActionButton: @Composable () -> Unit = {},
   content: @Composable ColumnScope.() -> Unit,
@@ -49,7 +48,7 @@ fun Performance.View(
         }
         Column {
           Text(
-            text = "$name (#${index + 1})",
+            text = "$name (#$id)",
             textAlign = TextAlign.Center,
           )
           Text(
@@ -102,5 +101,5 @@ val example = Performance(
 @Preview(showBackground = true)
 @Composable
 fun PerformancePreview() {
-  example.View(index = 0, deadline = Date(currentDate().time + timeout.inWholeMilliseconds)) {}
+  example.View(deadline = Date(currentDate().time + timeout.inWholeMilliseconds)) {}
 }

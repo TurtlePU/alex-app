@@ -24,7 +24,6 @@ class FirebaseJuryService(private val stageID: String) : JuryService {
     get() = stage.child("advice").snapshots.map {
       Advice(
         deadline = Date(it.child("deadline").getValue<Long>()!!),
-        index = it.child("index").getValue<Long>()!!,
         canComment = it.child("canComment").run { exists() && value == true },
       )
     }
