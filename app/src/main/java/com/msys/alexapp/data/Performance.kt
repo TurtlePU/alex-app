@@ -8,4 +8,13 @@ data class Performance(
   val category: String?,
   val age: Long?,
   val nomination: String?,
-)
+) {
+  fun toMap(): Map<String, Any?> = mapOf(
+    "name" to name,
+    "performance" to performance,
+    "city" to city,
+    "category" to category,
+    "age" to age,
+    "nomination" to nomination,
+  )
+}

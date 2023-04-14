@@ -39,21 +39,7 @@ class FirebaseStageService(private val adminID: String) : StageService {
   }
 
   override suspend fun newPerformance(performance: Performance) {
-    performance.run {
-      stage
-        .child("performances/$id")
-        .setValue(
-          mapOf(
-            "name" to name,
-            "performance" to this.performance,
-            "city" to city,
-            "category" to category,
-            "age" to age,
-            "nomination" to nomination,
-          )
-        )
-        .await()
-    }
+    stage.child("performances/${performance.id}").setValue(performance.toMap()).await()
   }
 
   override suspend fun appendToStage(stage: List<String>) {
