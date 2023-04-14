@@ -75,7 +75,7 @@ fun DefaultPreview() {
         override val stagedFlow: Flow<List<String>> get() = flowOf()
         override suspend fun sendInvitations() {}
         override suspend fun newPerformance(performance: Performance) {}
-        override suspend fun setStage(stage: List<String>) {}
+        override suspend fun appendToStage(stage: List<String>) {}
       }
     }.NavComposable()
   }

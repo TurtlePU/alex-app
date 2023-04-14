@@ -25,7 +25,7 @@ interface StageService {
   val stagedFlow: Flow<List<String>>
   suspend fun sendInvitations()
   suspend fun newPerformance(performance: Performance)
-  suspend fun setStage(stage: List<String>)
+  suspend fun appendToStage(stage: List<String>)
 }
 
 @Composable
@@ -45,7 +45,7 @@ fun StageService.PerformanceList(startStage: () -> Unit) {
     floatingActionButton = {
       if (ready && !onStage.isEmpty()) {
         FloatingActionButton(
-          onClick = { scope.launch { setStage(staged + onStage.keys.toList()); startStage() } },
+          onClick = { scope.launch { appendToStage(onStage.keys.toList()); startStage() } },
         ) {
           Icon(
             imageVector = Icons.Filled.Start,

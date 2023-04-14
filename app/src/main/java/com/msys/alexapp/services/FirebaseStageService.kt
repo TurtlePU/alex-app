@@ -27,7 +27,11 @@ class FirebaseStageService(private val adminID: String) : StageService {
   override val performancesFlow: Flow<List<Performance>>
     get() = admin.performances.zip(stage.performances) { a, b -> a + b }
   override val stagedFlow: Flow<List<String>>
-    get() = staged.snapshots.map { it.children.map { staged -> staged.getValue<String>()!! } }
+    get() = staged.snapshots.map { staged ->
+      staged.children
+        .sortedBy { it.key }
+        .map { it.getValue<String>()!! }
+    }
 
   override suspend fun sendInvitations() {
     val contacts = admin.child("contacts").get().await()
@@ -52,7 +56,10 @@ class FirebaseStageService(private val adminID: String) : StageService {
     }
   }
 
-  override suspend fun setStage(stage: List<String>) {
-    staged.setValue(stage.mapIndexed { i, s -> i.toString() to s }.toMap()).await()
+  override suspend fun appendToStage(stage: List<String>) {
+    staged.run {
+      val lastKey = get().await().children.maxOfOrNull { it.key!!.toInt() } ?: -1
+      updateChildren(stage.mapIndexed { i, s -> (lastKey + i + 1).toString() to s }.toMap())
+    }
   }
 }
