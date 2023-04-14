@@ -2,9 +2,9 @@ package com.msys.alexapp.services
 
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.database.ktx.snapshots
+import com.msys.alexapp.components.JuryNote
 import com.msys.alexapp.components.StageService
 import com.msys.alexapp.data.Performance
-import com.msys.alexapp.data.Report
 import com.msys.alexapp.data.Report.Companion.asReport
 import com.msys.alexapp.data.Role
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -19,13 +19,14 @@ class FirebaseStageService(adminID: String) : FirebaseStageServiceBase(adminID),
     }
 
   @OptIn(ExperimentalCoroutinesApi::class)
-  override val firstStagedPerformance: Flow<Performance?>
+  override val firstStagedPerformance: Flow<Pair<String, Performance>?>
     get() = staged.orderByKey().limitToFirst(1).snapshots.flatMapLatest { stagedList ->
       stagedList.children.firstOrNull()?.let { firstID ->
+        val key = firstID.key!!
         val id = firstID.getValue<String>()!!
         admin.child("performances/$id").snapshots.flatMapLatest { fromAdmin ->
-          if (fromAdmin.exists()) flowOf(fromAdmin.asPerformance)
-          else stage.child("performances/$id").snapshots.map { it.asPerformance }
+          if (fromAdmin.exists()) flowOf(key to fromAdmin.asPerformance)
+          else stage.child("performances/$id").snapshots.map { key to it.asPerformance }
         }
       } ?: flowOf(null)
     }
@@ -36,17 +37,20 @@ class FirebaseStageService(adminID: String) : FirebaseStageServiceBase(adminID),
     }
 
   @OptIn(ExperimentalCoroutinesApi::class)
-  override fun reportsFlow(performanceID: String): Flow<Map<String, Report?>> =
+  override fun performanceDashboard(id: String): Flow<Map<String, JuryNote>> =
     FirebaseService
       .invitationsFrom(Role.JURY)
-      .flatMapLatest {
-        combine(it.map { jury ->
-          data
-            .child("$jury/report/$performanceID")
-            .snapshots
-            .map { report -> jury to report.asReport }
-        }, Array<Pair<String, Report>>::toMap)
+      .flatMapLatest { juryIDs ->
+        combine(juryIDs.map { jury ->
+          val rFlow = data.child("$jury/report/$id").snapshots.map { it.asReport }
+          val nFlow = data.child("$jury/nickname").snapshots.map { it.getValue<String>()!! }
+          nFlow.zip(rFlow) { nickname, report -> jury to JuryNote(nickname, report) }
+        }, Array<Pair<String, JuryNote>>::toMap)
       }
+
+  override suspend fun dropStaged(key: String) {
+    staged.child(key).removeValue().await()
+  }
 
   override suspend fun setCanComment(canComment: Boolean) {
     stage.child("advice/canComment").setValue(canComment).await()
@@ -58,7 +62,7 @@ class FirebaseStageService(adminID: String) : FirebaseStageServiceBase(adminID),
     task.await()
   }
 
-  override suspend fun sendAverageRating(performanceID: String, averageRating: Double?) {
+  override suspend fun sendAverageRating(performanceID: String, averageRating: Double) {
     stage.child("report/$performanceID/average").setValue(averageRating).await()
   }
 
