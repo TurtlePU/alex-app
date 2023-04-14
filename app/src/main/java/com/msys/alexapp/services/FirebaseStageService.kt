@@ -15,6 +15,7 @@ import kotlinx.coroutines.tasks.await
 class FirebaseStageService(private val adminID: String) : StageService {
   companion object {
     private val stage: DatabaseReference get() = data.child(currentUID)
+    private val staged: DatabaseReference get() = stage.child("stage")
 
     private val DatabaseReference.performances: Flow<List<Performance>>
       get() = child("performances").snapshots.map {
@@ -25,6 +26,8 @@ class FirebaseStageService(private val adminID: String) : StageService {
   private val admin: DatabaseReference get() = data.child(adminID)
   override val performancesFlow: Flow<List<Performance>>
     get() = admin.performances.zip(stage.performances) { a, b -> a + b }
+  override val stagedFlow: Flow<List<String>>
+    get() = staged.snapshots.map { it.children.map { staged -> staged.getValue<String>()!! } }
 
   override suspend fun sendInvitations() {
     val contacts = admin.child("contacts").get().await()
@@ -50,13 +53,6 @@ class FirebaseStageService(private val adminID: String) : StageService {
   }
 
   override suspend fun setStage(stage: List<String>) {
-    Companion.stage
-      .child("stage")
-      .setValue(
-        stage
-          .mapIndexed { i, s -> i.toString() to s }
-          .toMap()
-      )
-      .await()
+    staged.setValue(stage.mapIndexed { i, s -> i.toString() to s }.toMap()).await()
   }
 }

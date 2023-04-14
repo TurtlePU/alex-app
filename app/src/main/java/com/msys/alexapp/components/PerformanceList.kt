@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 
 interface StageService {
   val performancesFlow: Flow<List<Performance>>
+  val stagedFlow: Flow<List<String>>
   suspend fun sendInvitations()
   suspend fun newPerformance(performance: Performance)
   suspend fun setStage(stage: List<String>)
@@ -35,13 +36,16 @@ fun StageService.PerformanceList(startStage: () -> Unit) {
     ready = true
   }
   val performances by performancesFlow.collectAsStateWithLifecycle(initialValue = listOf())
+  val staged by stagedFlow.collectAsStateWithLifecycle(initialValue = listOf())
+  val stagedSet = staged.toSet()
   val onStage = rememberSaveable { mutableStateMapOf<String, Unit>() }
+  val isStaged: (String) -> Boolean = { stagedSet.contains(it) || onStage.containsKey(it) }
   val scope = rememberCoroutineScope()
   Scaffold(
     floatingActionButton = {
       if (ready && !onStage.isEmpty()) {
         FloatingActionButton(
-          onClick = { scope.launch { setStage(onStage.keys.toList()); startStage() } },
+          onClick = { scope.launch { setStage(staged + onStage.keys.toList()); startStage() } },
         ) {
           Icon(
             imageVector = Icons.Filled.Start,
@@ -58,11 +62,11 @@ fun StageService.PerformanceList(startStage: () -> Unit) {
             modifier = Modifier
               .fillMaxWidth()
               .clickable {
-                if (onStage.containsKey(id)) onStage.remove(id)
+                if (isStaged(id)) onStage.remove(id)
                 else onStage[id] = Unit
               }
               .background(
-                if (onStage.containsKey(id)) MaterialTheme.colorScheme.primary
+                if (isStaged(id)) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.background
               )
           ) {

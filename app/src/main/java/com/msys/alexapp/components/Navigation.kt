@@ -72,6 +72,7 @@ fun DefaultPreview() {
       }
       override fun stageService(adminID: String) = object : StageService {
         override val performancesFlow: Flow<List<Performance>> get() = flowOf()
+        override val stagedFlow: Flow<List<String>> get() = flowOf()
         override suspend fun sendInvitations() {}
         override suspend fun newPerformance(performance: Performance) {}
         override suspend fun setStage(stage: List<String>) {}
