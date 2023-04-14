@@ -9,4 +9,5 @@
     <string name="start_stage">Начать этап</string>
     <string name="add_performance">Добавить выступление</string>
     <string name="cancel_new_performance">Не добавлять</string>
+    <string name="next_performance">Следующее выступление</string>
 </resources>
