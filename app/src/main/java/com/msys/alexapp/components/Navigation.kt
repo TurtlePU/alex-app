@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.flowOf
 interface AlexAppService : AuthorizationService {
   fun invitationsFrom(role: Role): Flow<List<String>>
   fun carouselService(stageID: String): JuryService
+  fun stageService(adminID: String): StageService
 }
 
 @Composable
@@ -33,8 +34,8 @@ fun AlexAppService.NavComposable() {
           navController.navigate("list/$id")
         }
       }
-      composable("list/{adminID}") {
-        PerformanceList()
+      composable("list/{adminID}") { backStack ->
+        stageService(backStack.arguments!!.getString("adminID")!!).PerformanceList()
       }
     }
     navigation(route = JURY.toString(), startDestination = "invitations") {
@@ -64,6 +65,11 @@ fun DefaultPreview() {
         override fun averageRating(id: String): Flow<Double?> = flowOf(null)
         override suspend fun sendInvitation() {}
         override suspend fun evaluate(id: String, rating: Double, comment: String?) {}
+      }
+      override fun stageService(adminID: String) = object : StageService {
+        override val performancesFlow: Flow<List<Performance>> get() = flowOf()
+        override suspend fun sendInvitations() {}
+        override suspend fun newPerformance(performance: Performance) {}
       }
     }.NavComposable()
   }

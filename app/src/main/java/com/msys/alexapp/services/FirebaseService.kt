@@ -22,4 +22,5 @@ object FirebaseService : AlexAppService {
       }
 
   override fun carouselService(stageID: String) = FirebaseJuryService(stageID)
+  override fun stageService(adminID: String) = FirebaseStageService(adminID)
 }
