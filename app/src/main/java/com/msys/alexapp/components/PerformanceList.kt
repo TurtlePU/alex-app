@@ -16,6 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
@@ -31,6 +32,22 @@ interface StagePreparationService {
   suspend fun appendToStage(stage: List<String>)
 }
 
+enum class Tabs {
+  STAGING, RATED;
+
+  val text: String
+    get() = when (this) {
+      STAGING -> TODO()
+      RATED -> TODO()
+    }
+
+  val icon: ImageVector
+    get() = when (this) {
+      STAGING -> TODO()
+      RATED -> TODO()
+    }
+}
+
 @Composable
 fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
   var ready by rememberSaveable { mutableStateOf(false) }
@@ -43,10 +60,28 @@ fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
   val stagedSet = staged.toSet()
   val onStage = rememberSaveable { mutableStateMapOf<String, Unit>() }
   val isStaged: (String) -> Boolean = { stagedSet.contains(it) || onStage.containsKey(it) }
-  val scope = rememberCoroutineScope()
+  var currentTab by remember { mutableStateOf(Tabs.STAGING) }
   Scaffold(
+    topBar = {
+      TabRow(selectedTabIndex = currentTab.ordinal) {
+        for (tab in Tabs.values()) {
+          Tab(
+            selected = currentTab == tab,
+            onClick = { currentTab = tab },
+            text = { Text(text = tab.text) },
+            icon = {
+              Icon(
+                imageVector = tab.icon,
+                contentDescription = null
+              )
+            },
+          )
+        }
+      }
+    },
     floatingActionButton = {
-      if (ready && !onStage.isEmpty()) {
+      if (currentTab == Tabs.STAGING && ready && !onStage.isEmpty()) {
+        val scope = rememberCoroutineScope()
         FloatingActionButton(
           onClick = { scope.launch { appendToStage(onStage.keys.toList()); startStage() } },
         ) {
