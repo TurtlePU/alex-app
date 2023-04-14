@@ -12,4 +12,11 @@
     <string name="next_performance">Следующее выступление</string>
     <string name="finish_stage">Завершить этап</string>
     <string name="back_to_list">Назад к выбору участников</string>
+    <string name="laureate_1">Л1</string>
+    <string name="laureate_2">Л2</string>
+    <string name="laureate_3">Л3</string>
+    <string name="diploma_1">Д1</string>
+    <string name="diploma_2">Д2</string>
+    <string name="diploma_3">Д3</string>
+    <string name="participant">УЧ</string>
 </resources>
