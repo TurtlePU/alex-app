@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.Flow
 import java.util.*
 
 interface StageService {
+  val canCommentFlow: Flow<Boolean>
   val firstStagedPerformance: Flow<Pair<Long, Performance>?>
   suspend fun sendAdvice(advice: Advice)
   suspend fun setCurrent(performance: Performance)
@@ -28,7 +29,8 @@ fun StageService.Carousel(finishStage: () -> Unit) {
   performance?.let {
     LaunchedEffect(true) { setCurrent(it.second) }
     val deadline = rememberSaveable { currentDate().time + timeout.inWholeMilliseconds }
-    LaunchedEffect(true) { sendAdvice(Advice(Date(deadline), it.first)) }
+    val canComment by canCommentFlow.collectAsStateWithLifecycle(initialValue = false)
+    LaunchedEffect(canComment) { sendAdvice(Advice(Date(deadline), it.first, canComment)) }
     it.second.View(
       index = it.first,
       deadline = Date(deadline),

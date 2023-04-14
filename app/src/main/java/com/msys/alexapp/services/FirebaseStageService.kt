@@ -13,6 +13,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 
 class FirebaseStageService(adminID: String) : FirebaseStageServiceBase(adminID), StageService {
+  override val canCommentFlow: Flow<Boolean>
+    get() = admin.child("canComment").snapshots.map {
+      it.exists() && it.getValue<Boolean>() == true
+    }
+
   @OptIn(ExperimentalCoroutinesApi::class)
   override val firstStagedPerformance: Flow<Pair<Long, Performance>?>
     get() = staged.orderByKey().limitToFirst(1).snapshots.flatMapLatest { stagedList ->
