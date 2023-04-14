@@ -6,8 +6,7 @@ import com.msys.alexapp.data.Performance
 import kotlinx.coroutines.flow.Flow
 
 interface StageService {
-  val stagedFlow: Flow<Map<Long, String>>
-  fun performance(id: String): Flow<Performance>
+  val firstStagedPerformance: Flow<Pair<Long, Performance>?>
   suspend fun sendAdvice(advice: Advice)
   suspend fun setCurrent(performance: Performance)
 }

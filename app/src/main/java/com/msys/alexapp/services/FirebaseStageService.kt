@@ -13,16 +13,17 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 
 class FirebaseStageService(adminID: String) : FirebaseStageServiceBase(adminID), StageService {
-  override val stagedFlow: Flow<Map<Long, String>>
-    get() = staged.snapshots.map {
-      it.children.associate { child -> child.key!!.toLong() to child.getValue<String>()!! }
-    }
-
   @OptIn(ExperimentalCoroutinesApi::class)
-  override fun performance(id: String): Flow<Performance> =
-    stage.child("performances/$id").snapshots.flatMapLatest { fromStage ->
-      if (fromStage.exists()) flowOf(fromStage.asPerformance)
-      else admin.child("performances/$id").snapshots.map { it.asPerformance }
+  override val firstStagedPerformance: Flow<Pair<Long, Performance>?>
+    get() = staged.orderByKey().limitToFirst(1).snapshots.flatMapLatest { stagedList ->
+      stagedList.children.firstOrNull()?.let { firstID ->
+        val key = firstID.key!!.toLong()
+        val id = firstID.getValue<String>()!!
+        stage.child("performances/$id").snapshots.flatMapLatest { fromStage ->
+          if (fromStage.exists()) flowOf(key to fromStage.asPerformance)
+          else admin.child("performances/$id").snapshots.map { key to it.asPerformance }
+        }
+      } ?: flowOf(null)
     }
 
   override suspend fun sendAdvice(advice: Advice) {
