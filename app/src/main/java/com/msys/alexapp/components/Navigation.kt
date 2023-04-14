@@ -26,7 +26,9 @@ fun AlexAppService.NavComposable() {
   NavHost(navController = navController, startDestination = "authorization") {
     composable("authorization") {
       Authorization { role ->
-        navController.navigate(role.toString()) { popUpTo("authorization") { inclusive = true } }
+        navController.navigate(role.toString()) {
+          popUpTo("authorization") { inclusive = true }
+        }
       }
     }
     navigation(route = ADMIN.toString(), startDestination = "") {
@@ -34,7 +36,9 @@ fun AlexAppService.NavComposable() {
     navigation(route = STAGE.toString(), startDestination = "invitations") {
       composable("invitations") {
         Invitations(invitationsFrom(ADMIN)) { id ->
-          navController.navigate("list/$id")
+          navController.navigate("list/$id") {
+            launchSingleTop = true
+          }
         }
       }
       composable("list/{adminID}") { backStack ->
