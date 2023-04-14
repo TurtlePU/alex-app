@@ -3,7 +3,7 @@ package com.msys.alexapp.services
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.database.ktx.snapshots
-import com.msys.alexapp.components.Advice
+import com.msys.alexapp.data.Advice
 import com.msys.alexapp.components.JuryService
 import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.Role
@@ -24,8 +24,8 @@ class FirebaseJuryService(private val stageID: String) : JuryService {
     get() = stage.child("advice").snapshots.map {
       Advice(
         deadline = Date(it.child("deadline").getValue<Long>()!!),
-        performanceCount = it.child("count").getValue<Long>()!!,
-        canComment = it.child("comment").run { exists() && value == true },
+        index = it.child("index").getValue<Long>()!!,
+        canComment = it.child("canComment").run { exists() && value == true },
       )
     }
 

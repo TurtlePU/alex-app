@@ -17,17 +17,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
+import com.msys.alexapp.data.Advice
 import com.msys.alexapp.data.Performance
 import com.msys.alexapp.ui.theme.AlexAppTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
-import java.util.*
-
-data class Advice(
-  val deadline: Date,
-  val performanceCount: Long = 0,
-  val canComment: Boolean = false,
-)
 
 interface JuryService {
   val currentPerformance: Flow<Performance?>
@@ -72,7 +66,7 @@ fun Advice.PerformancePage(
   var comment: String? by rememberSaveable { mutableStateOf(null) }
   val scope = rememberCoroutineScope()
   performance.View(
-    index = performanceCount,
+    index = index,
     deadline = deadline,
     floatingActionButton = {
       if (rating != null) {

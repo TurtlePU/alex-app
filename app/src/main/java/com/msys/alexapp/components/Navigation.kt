@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import com.msys.alexapp.data.Advice
 import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.Role
 import com.msys.alexapp.data.Role.*
@@ -48,7 +49,10 @@ fun AlexAppService.NavComposable() {
         }
       }
       composable("stage/{adminID}") { backStack ->
-        stageService(backStack.arguments!!.getString("adminID")!!).Carousel()
+        val adminID = backStack.arguments!!.getString("adminID")!!
+        stageService(adminID).Carousel {
+          navController.navigate("list/$adminID")
+        }
       }
     }
     navigation(route = JURY.toString(), startDestination = "invitations") {
@@ -89,6 +93,10 @@ fun DefaultPreview() {
       }
 
       override fun stageService(adminID: String) = object : StageService {
+        override val stagedFlow: Flow<Map<Long, String>> get() = flowOf()
+        override fun performance(id: String): Flow<Performance> = flowOf()
+        override suspend fun sendAdvice(advice: Advice) {}
+        override suspend fun setCurrent(performance: Performance) {}
       }
     }.NavComposable()
   }
