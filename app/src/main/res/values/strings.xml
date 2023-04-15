@@ -19,4 +19,5 @@
     <string name="diploma_2">Д2</string>
     <string name="diploma_3">Д3</string>
     <string name="participant">УЧ</string>
+    <string name="copy_comments">Скопировать комментарии</string>
 </resources>
