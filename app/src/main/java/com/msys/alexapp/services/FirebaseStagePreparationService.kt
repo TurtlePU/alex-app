@@ -5,8 +5,10 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.database.ktx.snapshots
 import com.msys.alexapp.components.StagePreparationService
+import com.msys.alexapp.data.StageReport
 import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.Role
+import com.msys.alexapp.data.StageReport.Companion.asStageReport
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.zip
@@ -28,6 +30,10 @@ class FirebaseStagePreparationService(adminID: String) : FirebaseStageServiceBas
       staged.children
         .sortedBy { it.key }
         .map { it.getValue<String>()!! }
+    }
+  override val reportFlow: Flow<Map<String, StageReport>>
+    get() = staged.child("report").snapshots.map { reports ->
+      reports.children.associate { it.key!! to it.asStageReport }
     }
 
   override suspend fun sendInvitations() {

@@ -26,13 +26,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
 import com.msys.alexapp.components.Tabs.*
 import com.msys.alexapp.data.Performance
+import com.msys.alexapp.data.StageReport
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
-
-data class StageReport(
-  val averageRating: Double,
-  val comments: Map<String, String>,
-)
 
 interface StagePreparationService {
   val performancesFlow: Flow<List<Performance>>

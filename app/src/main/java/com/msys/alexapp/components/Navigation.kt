@@ -10,6 +10,7 @@ import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.Report
 import com.msys.alexapp.data.Role
 import com.msys.alexapp.data.Role.*
+import com.msys.alexapp.data.StageReport
 import com.msys.alexapp.ui.theme.AlexAppTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -90,6 +91,7 @@ fun DefaultPreview() {
       override fun stagePreparationService(adminID: String) = object : StagePreparationService {
         override val performancesFlow: Flow<List<Performance>> get() = flowOf()
         override val stagedFlow: Flow<List<String>> get() = flowOf()
+        override val reportFlow: Flow<Map<String, StageReport>> get() = flowOf()
         override suspend fun sendInvitations() {}
         override suspend fun newPerformance(performance: Performance) {}
         override suspend fun appendToStage(stage: List<String>) {}
