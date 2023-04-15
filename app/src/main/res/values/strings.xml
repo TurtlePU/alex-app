@@ -20,4 +20,6 @@
     <string name="diploma_3">Д3</string>
     <string name="participant">УЧ</string>
     <string name="copy_comments">Скопировать комментарии</string>
+    <string name="rated_text">Оценки</string>
+    <string name="staging_text">На сцену</string>
 </resources>

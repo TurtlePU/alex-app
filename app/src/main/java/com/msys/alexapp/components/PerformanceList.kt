@@ -1,5 +1,6 @@
 package com.msys.alexapp.components
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.background
@@ -45,16 +46,17 @@ interface StagePreparationService {
 enum class Tabs {
   STAGING, RATED;
 
-  val text: String
+  val text: Int
+    @StringRes
     get() = when (this) {
-      STAGING -> TODO()
-      RATED -> TODO()
+      STAGING -> R.string.staging_text
+      RATED -> R.string.rated_text
     }
 
   val icon: ImageVector
     get() = when (this) {
-      STAGING -> TODO()
-      RATED -> TODO()
+      STAGING -> Icons.Filled.Start
+      RATED -> Icons.Filled.Archive
     }
 }
 
@@ -79,7 +81,7 @@ fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
           Tab(
             selected = currentTab == tab,
             onClick = { currentTab = tab },
-            text = { Text(text = tab.text) },
+            text = { Text(text = stringResource(tab.text)) },
             icon = {
               Icon(
                 imageVector = tab.icon,
