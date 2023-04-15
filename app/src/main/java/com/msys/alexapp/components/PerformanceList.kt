@@ -16,17 +16,25 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
+import com.msys.alexapp.components.Tabs.*
 import com.msys.alexapp.data.Performance
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
+data class StageReport(
+  val averageRating: Double,
+  val comments: Map<String, String>,
+)
+
 interface StagePreparationService {
   val performancesFlow: Flow<List<Performance>>
   val stagedFlow: Flow<List<String>>
+  val reportFlow: Flow<Map<String, StageReport>>
   suspend fun sendInvitations()
   suspend fun newPerformance(performance: Performance)
   suspend fun appendToStage(stage: List<String>)
@@ -60,11 +68,12 @@ fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
   val stagedSet = staged.toSet()
   val onStage = rememberSaveable { mutableStateMapOf<String, Unit>() }
   val isStaged: (String) -> Boolean = { stagedSet.contains(it) || onStage.containsKey(it) }
-  var currentTab by remember { mutableStateOf(Tabs.STAGING) }
+  val reports by reportFlow.collectAsStateWithLifecycle(initialValue = mapOf())
+  var currentTab by remember { mutableStateOf(STAGING) }
   Scaffold(
     topBar = {
       TabRow(selectedTabIndex = currentTab.ordinal) {
-        for (tab in Tabs.values()) {
+        for (tab in values()) {
           Tab(
             selected = currentTab == tab,
             onClick = { currentTab = tab },
@@ -80,7 +89,7 @@ fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
       }
     },
     floatingActionButton = {
-      if (currentTab == Tabs.STAGING && ready && !onStage.isEmpty()) {
+      if (currentTab == STAGING && ready && !onStage.isEmpty()) {
         val scope = rememberCoroutineScope()
         FloatingActionButton(
           onClick = { scope.launch { appendToStage(onStage.keys.toList()); startStage() } },
@@ -93,32 +102,51 @@ fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
       }
     }
   ) { padding ->
-    LazyColumn(modifier = Modifier.padding(padding)) {
-      items(performances) {
-        it.run {
-          Row(
-            modifier = Modifier
-              .fillMaxWidth()
-              .clickable {
-                if (isStaged(id)) onStage.remove(id)
-                else onStage[id] = Unit
-              }
-              .background(
-                if (isStaged(id)) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.background
-              )
-          ) {
-            Text(text = id)
-            Text(text = name)
-            Text(text = performance)
-          }
+    when (currentTab) {
+      STAGING -> StagingList(
+        performances = performances.filter { !reports.containsKey(it.id) },
+        onClick = { id ->
+          if (isStaged(id)) onStage.remove(id)
+          else onStage[id] = Unit
+        },
+        background = { id ->
+          if (isStaged(id)) MaterialTheme.colorScheme.primary
+          else MaterialTheme.colorScheme.background
+        },
+        newPerformanceInitialID = performances.maxOfOrNull { it.id.toLong() + 1 } ?: 0,
+        newPerformance = { newPerformance(it) },
+        modifier = Modifier.padding(padding),
+      )
+      RATED -> TODO()
+    }
+  }
+}
+
+@Composable
+fun StagingList(
+  performances: List<Performance>,
+  onClick: (String) -> Unit,
+  background: @Composable (String) -> Color,
+  newPerformanceInitialID: Long,
+  newPerformance: suspend (Performance) -> Unit,
+  modifier: Modifier = Modifier,
+) {
+  LazyColumn(modifier = modifier) {
+    items(performances) {
+      it.run {
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick(id) }
+            .background(background(id))
+        ) {
+          Text(text = id)
+          Text(text = name)
+          Text(text = performance)
         }
       }
-      item {
-        val initialID = performances.maxOfOrNull { it.id.toLong() + 1 } ?: 0
-        NewPerformance(initialID) { newPerformance(it) }
-      }
     }
+    item { NewPerformance(newPerformanceInitialID, newPerformance) }
   }
 }
 
