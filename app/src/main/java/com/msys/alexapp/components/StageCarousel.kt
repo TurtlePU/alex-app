@@ -17,14 +17,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
 import com.msys.alexapp.data.Performance
-import com.msys.alexapp.data.Report
+import com.msys.alexapp.data.JuryReport
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import java.util.*
 
 data class JuryNote(
   val nickname: String,
-  val report: Report?,
+  val report: JuryReport?,
 )
 
 interface StageService {

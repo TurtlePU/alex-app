@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
 import com.msys.alexapp.data.Performance
-import com.msys.alexapp.data.Report
+import com.msys.alexapp.data.JuryReport
 import com.msys.alexapp.ui.theme.AlexAppTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -35,7 +35,7 @@ interface JuryService {
   fun isEvaluated(id: String): Flow<Boolean>
   fun averageRating(id: String): Flow<Double?>
   suspend fun sendInvitation()
-  suspend fun evaluate(id: String, report: Report)
+  suspend fun evaluate(id: String, report: JuryReport)
 }
 
 @Composable
@@ -64,7 +64,7 @@ fun RatingPage(rating: Double) {
 @Composable
 fun Advice.PerformancePage(
   performance: Performance,
-  evaluate: suspend (Report) -> Unit
+  evaluate: suspend (JuryReport) -> Unit
 ) {
   var rating: Double? by rememberSaveable { mutableStateOf(null) }
   var comment: String? by rememberSaveable { mutableStateOf(null) }
@@ -74,7 +74,7 @@ fun Advice.PerformancePage(
     floatingActionButton = {
       if (rating != null) {
         FloatingActionButton(
-          onClick = { scope.launch { evaluate(Report(rating!!, comment)) } },
+          onClick = { scope.launch { evaluate(JuryReport(rating!!, comment)) } },
         ) {
           Icon(
             imageVector = Icons.Filled.StarRate,

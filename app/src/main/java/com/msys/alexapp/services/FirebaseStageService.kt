@@ -5,7 +5,7 @@ import com.google.firebase.database.ktx.snapshots
 import com.msys.alexapp.components.JuryNote
 import com.msys.alexapp.components.StageService
 import com.msys.alexapp.data.Performance
-import com.msys.alexapp.data.Report.Companion.asReport
+import com.msys.alexapp.data.JuryReport.Companion.asJuryReport
 import com.msys.alexapp.data.Role
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
@@ -42,7 +42,7 @@ class FirebaseStageService(adminID: String) : FirebaseStageServiceBase(adminID),
       .invitationsFrom(Role.JURY)
       .flatMapLatest { juryIDs ->
         combine(juryIDs.map { jury ->
-          val rFlow = data.child("$jury/report/$id").snapshots.map { it.asReport }
+          val rFlow = data.child("$jury/report/$id").snapshots.map { it.asJuryReport }
           val nFlow = data.child("$jury/nickname").snapshots.map { it.getValue<String>()!! }
           nFlow.zip(rFlow) { nickname, report -> jury to JuryNote(nickname, report) }
         }, Array<Pair<String, JuryNote>>::toMap)

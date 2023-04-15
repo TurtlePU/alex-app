@@ -3,13 +3,13 @@ package com.msys.alexapp.data
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.ktx.getValue
 
-data class Report(
+data class JuryReport(
   val rating: Double,
   val comment: String?,
 ) {
   companion object {
-    val DataSnapshot.asReport
-      get() = Report(
+    val DataSnapshot.asJuryReport
+      get() = JuryReport(
         child("rating").getValue<Double>()!!,
         child("comment").getValue<String>()
       )

@@ -7,7 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.msys.alexapp.data.Performance
-import com.msys.alexapp.data.Report
+import com.msys.alexapp.data.JuryReport
 import com.msys.alexapp.data.Role
 import com.msys.alexapp.data.Role.*
 import com.msys.alexapp.data.StageReport
@@ -85,7 +85,7 @@ fun DefaultPreview() {
         override fun isEvaluated(id: String): Flow<Boolean> = flowOf(false)
         override fun averageRating(id: String): Flow<Double?> = flowOf(null)
         override suspend fun sendInvitation() {}
-        override suspend fun evaluate(id: String, report: Report) {}
+        override suspend fun evaluate(id: String, report: JuryReport) {}
       }
 
       override fun stagePreparationService(adminID: String) = object : StagePreparationService {

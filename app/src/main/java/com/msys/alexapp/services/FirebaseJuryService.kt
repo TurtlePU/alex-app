@@ -6,7 +6,7 @@ import com.google.firebase.database.ktx.snapshots
 import com.msys.alexapp.components.Advice
 import com.msys.alexapp.components.JuryService
 import com.msys.alexapp.data.Performance
-import com.msys.alexapp.data.Report
+import com.msys.alexapp.data.JuryReport
 import com.msys.alexapp.data.Role
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -40,7 +40,7 @@ class FirebaseJuryService(private val stageID: String) : JuryService {
     jury.chooseFriends(Role.JURY, contacts)
   }
 
-  override suspend fun evaluate(id: String, report: Report) {
+  override suspend fun evaluate(id: String, report: JuryReport) {
     jury.child("report/$id").setValue(report.toMap()).await()
   }
 }
