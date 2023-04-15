@@ -21,21 +21,13 @@ import kotlin.time.Duration.Companion.minutes
 @Composable
 fun Performance.View(
   deadline: Date,
+  cornerButton: @Composable () -> Unit = {},
   bottomBar: @Composable () -> Unit = {},
   floatingActionButton: @Composable () -> Unit = {},
   content: @Composable ColumnScope.() -> Unit,
 ) {
   Scaffold(
-    bottomBar = bottomBar,
-    floatingActionButton = floatingActionButton,
-  ) { padding ->
-    Column(
-      modifier = Modifier
-        .fillMaxSize()
-        .padding(padding),
-      verticalArrangement = Arrangement.SpaceBetween,
-    ) {
-      Timeout(deadline)
+    topBar = {
       Row(
         modifier = Modifier
           .fillMaxWidth()
@@ -62,7 +54,19 @@ fun Performance.View(
           text = city ?: "",
           textAlign = TextAlign.Right
         )
+        cornerButton()
       }
+    },
+    bottomBar = bottomBar,
+    floatingActionButton = floatingActionButton,
+  ) { padding ->
+    Column(
+      modifier = Modifier
+        .fillMaxSize()
+        .padding(padding),
+      verticalArrangement = Arrangement.SpaceBetween,
+    ) {
+      Timeout(deadline)
       content()
     }
   }

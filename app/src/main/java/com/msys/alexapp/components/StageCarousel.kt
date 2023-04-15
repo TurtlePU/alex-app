@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.NavigateNext
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -46,12 +47,7 @@ fun StageService.Carousel(finishStage: () -> Unit) {
   val canComment by canCommentFlow.collectAsStateWithLifecycle(initialValue = false)
   LaunchedEffect(canComment) { setCanComment(canComment) }
   firstStagedPerformance.collectAsStateWithLifecycle(initialValue = null).value
-    ?.let { (key, performance) ->
-      PerformanceDashboard(performance, finishStage) { comments ->
-        publishComments(performance.id, comments)
-        dropStaged(key)
-      }
-    }
+    ?.let { (key, perf) -> PerformanceDashboard(perf, finishStage) { dropStaged(key) } }
     ?: FinishStage(finishStage)
 }
 
@@ -59,7 +55,7 @@ fun StageService.Carousel(finishStage: () -> Unit) {
 fun StageService.PerformanceDashboard(
   performance: Performance,
   finishStage: () -> Unit,
-  finishPerformance: suspend (Map<String, String>) -> Unit,
+  dropStaged: suspend () -> Unit,
 ) {
   val deadline = rememberSaveable { currentDate().time + timeout.inWholeMilliseconds }
   LaunchedEffect(true) { setCurrent(performance, Date(deadline)) }
@@ -68,14 +64,26 @@ fun StageService.PerformanceDashboard(
   val averageRating = dashboard.mapNotNull { it.value.report?.rating }.average()
   val comments = dashboard.values.mapNotNull(JuryNote::toCommentPair).toMap()
   LaunchedEffect(averageRating) { sendAverageRating(performance.id, averageRating) }
+  val scope = rememberCoroutineScope()
   performance.View(
     deadline = Date(deadline),
+    cornerButton = {
+      Button(onClick = { scope.launch { dropStaged() } }) {
+        Icon(
+          imageVector = Icons.Filled.Delete,
+          contentDescription = stringResource(R.string.skip_participant)
+        )
+      }
+    },
     bottomBar = { RatingBar(averageRating) },
     floatingActionButton = {
-      val scope = rememberCoroutineScope()
+      val finishPerformance: suspend () -> Unit = {
+        publishComments(performance.id, comments)
+        dropStaged()
+      }
       nextStagedPerformance.collectAsStateWithLifecycle(initialValue = null).value
-        ?.let { id -> NextButton(id, canFinish) { scope.launch { finishPerformance(comments) } } }
-        ?: FinishButton(canFinish) { scope.launch { finishPerformance(comments); finishStage() } }
+        ?.let { id -> NextButton(id, canFinish) { scope.launch { finishPerformance() } } }
+        ?: FinishButton(canFinish) { scope.launch { finishPerformance(); finishStage() } }
     }
   ) { JuryRow(dashboard.values) }
 }
