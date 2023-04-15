@@ -22,4 +22,5 @@
     <string name="copy_comments">Скопировать комментарии</string>
     <string name="rated_text">Оценки</string>
     <string name="staging_text">На сцену</string>
+    <string name="back_to_auth">Вернуться к авторизации</string>
 </resources>

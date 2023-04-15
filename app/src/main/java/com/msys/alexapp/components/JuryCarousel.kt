@@ -1,11 +1,9 @@
 package com.msys.alexapp.components
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.StarRate
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -39,7 +37,7 @@ interface JuryService {
 }
 
 @Composable
-fun JuryService.Carousel() {
+fun JuryService.Carousel(exit: () -> Unit) {
   LaunchedEffect(true) {
     sendInvitation()
   }
@@ -53,12 +51,25 @@ fun JuryService.Carousel() {
       val advice by juryAdvice.collectAsStateWithLifecycle(initialValue = Advice(currentDate()))
       advice.PerformancePage(it) { report -> evaluate(it.id, report) }
     }
-  } ?: Text(text = stringResource(R.string.no_performance))
+  } ?: BreakPage(exit)
 }
 
 @Composable
 fun RatingPage(rating: Double) {
   Text(text = stringResource(R.string.rated_performance, rating))
+}
+
+@Composable
+fun BreakPage(exit: () -> Unit) {
+  Column {
+    Text(text = stringResource(R.string.no_performance))
+    Button(onClick = exit) {
+      Icon(
+        imageVector = Icons.Filled.ExitToApp,
+        contentDescription = stringResource(R.string.back_to_auth)
+      )
+    }
+  }
 }
 
 @Composable

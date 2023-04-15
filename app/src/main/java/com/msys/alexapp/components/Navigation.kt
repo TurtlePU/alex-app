@@ -29,9 +29,7 @@ fun AlexAppService.NavComposable() {
   NavHost(navController = navController, startDestination = "authorization") {
     composable("authorization") {
       Authorization { role ->
-        navController.navigate(role.toString()) {
-          popUpTo("authorization") { inclusive = true }
-        }
+        navController.navigate(role.toString())
       }
     }
     composable(ADMIN.toString()) { Admin() }
@@ -54,7 +52,8 @@ fun AlexAppService.NavComposable() {
       composable("stage/{adminID}") { backStack ->
         val adminID = backStack.arguments!!.getString("adminID")!!
         stageService(adminID).Carousel {
-          navController.navigate("list/$adminID")
+          navController.popBackStack()
+          navController.clearBackStack("stage/$adminID")
         }
       }
     }
@@ -65,7 +64,9 @@ fun AlexAppService.NavComposable() {
         }
       }
       composable("carousel/{stageID}") { backStack ->
-        juryService(backStack.arguments!!.getString("stageID")!!).Carousel()
+        juryService(backStack.arguments!!.getString("stageID")!!).Carousel {
+          navController.popBackStack("authorization", inclusive = false)
+        }
       }
     }
   }
