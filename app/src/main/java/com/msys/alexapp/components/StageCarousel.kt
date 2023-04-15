@@ -25,7 +25,9 @@ import java.util.*
 data class JuryNote(
   val nickname: String,
   val report: JuryReport?,
-)
+) {
+  val toCommentPair: Pair<String, String>? get() = report?.comment?.let { nickname to it }
+}
 
 interface StageService {
   val canCommentFlow: Flow<Boolean>
@@ -45,7 +47,10 @@ fun StageService.Carousel(finishStage: () -> Unit) {
   LaunchedEffect(canComment) { setCanComment(canComment) }
   firstStagedPerformance.collectAsStateWithLifecycle(initialValue = null).value
     ?.let { (key, performance) ->
-      PerformanceDashboard(performance, finishStage) { dropStaged(key) }
+      PerformanceDashboard(performance, finishStage) { comments ->
+        publishComments(performance.id, comments)
+        dropStaged(key)
+      }
     }
     ?: FinishStage(finishStage)
 }
@@ -54,13 +59,14 @@ fun StageService.Carousel(finishStage: () -> Unit) {
 fun StageService.PerformanceDashboard(
   performance: Performance,
   finishStage: () -> Unit,
-  finishPerformance: suspend () -> Unit,
+  finishPerformance: suspend (Map<String, String>) -> Unit,
 ) {
   val deadline = rememberSaveable { currentDate().time + timeout.inWholeMilliseconds }
   LaunchedEffect(true) { setCurrent(performance, Date(deadline)) }
   val dashboard by performanceDashboard(performance.id).collectAsStateWithLifecycle(mapOf())
   val canFinish = dashboard.all { it.value.report != null }
   val averageRating = dashboard.mapNotNull { it.value.report?.rating }.average()
+  val comments = dashboard.values.mapNotNull(JuryNote::toCommentPair).toMap()
   LaunchedEffect(averageRating) { sendAverageRating(performance.id, averageRating) }
   performance.View(
     deadline = Date(deadline),
@@ -68,8 +74,8 @@ fun StageService.PerformanceDashboard(
     floatingActionButton = {
       val scope = rememberCoroutineScope()
       nextStagedPerformance.collectAsStateWithLifecycle(initialValue = null).value
-        ?.let { id -> NextButton(id, canFinish) { scope.launch { finishPerformance() } } }
-        ?: FinishButton(canFinish) { scope.launch { finishPerformance(); finishStage() } }
+        ?.let { id -> NextButton(id, canFinish) { scope.launch { finishPerformance(comments) } } }
+        ?: FinishButton(canFinish) { scope.launch { finishPerformance(comments); finishStage() } }
     }
   ) { JuryRow(dashboard.values) }
 }
