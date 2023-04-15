@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import java.util.*
 
-interface AlexAppService : AuthorizationService {
+interface AlexAppService : AuthorizationService, AdminService {
   fun invitationsFrom(role: Role): Flow<List<String>>
   fun juryService(stageID: String): JuryService
   fun stagePreparationService(adminID: String): StagePreparationService
@@ -34,8 +34,7 @@ fun AlexAppService.NavComposable() {
         }
       }
     }
-    navigation(route = ADMIN.toString(), startDestination = "") {
-    }
+    composable(ADMIN.toString()) { Admin() }
     navigation(route = STAGE.toString(), startDestination = "invitations") {
       composable("invitations") {
         Invitations(invitationsFrom(ADMIN)) { id ->
