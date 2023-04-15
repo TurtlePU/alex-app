@@ -136,7 +136,7 @@ fun StagingList(
   modifier: Modifier = Modifier,
 ) {
   LazyColumn(modifier = modifier) {
-    items(performances) {
+    items(items = performances, key = { it.id }) {
       it.run {
         Row(
           modifier = Modifier
@@ -156,7 +156,10 @@ fun StagingList(
 
 @Composable
 fun ReportList(reports: List<Pair<Performance, StageReport>>, modifier: Modifier = Modifier) {
-  LazyColumn {}
+  LazyColumn(modifier = modifier) {
+    items(items = reports, key = { it.first.id }) { (performance, report) ->
+    }
+  }
 }
 
 @Composable
