@@ -102,6 +102,7 @@ fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
       }
     }
   ) { padding ->
+    val modifier = Modifier.padding(padding)
     when (currentTab) {
       STAGING -> StagingList(
         performances = performances.filter { !reports.containsKey(it.id) },
@@ -115,9 +116,12 @@ fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
         },
         newPerformanceInitialID = performances.maxOfOrNull { it.id.toLong() + 1 } ?: 0,
         newPerformance = { newPerformance(it) },
-        modifier = Modifier.padding(padding),
+        modifier = modifier,
       )
-      RATED -> TODO()
+      RATED -> ReportList(
+        reports = performances.mapNotNull { perf -> reports[perf.id]?.let { perf to it } },
+        modifier = modifier
+      )
     }
   }
 }
@@ -148,6 +152,11 @@ fun StagingList(
     }
     item { NewPerformance(newPerformanceInitialID, newPerformance) }
   }
+}
+
+@Composable
+fun ReportList(reports: List<Pair<Performance, StageReport>>, modifier: Modifier = Modifier) {
+  LazyColumn {}
 }
 
 @Composable
