@@ -99,6 +99,9 @@ fun AuthorizationService.Authorization(become: (Role) -> Unit) {
         Text(text = stringResource(R.string.login_stage))
       }
     }
+    Button(onClick = { signInAs(Role.ADMIN) }) {
+      Text(text = "Я админ")
+    }
   }
 }
 
