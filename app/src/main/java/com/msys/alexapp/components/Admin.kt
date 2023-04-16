@@ -26,6 +26,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
 import com.msys.alexapp.data.Performance
+import com.msys.alexapp.data.StageReport
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
@@ -34,7 +35,9 @@ import kotlinx.coroutines.withContext
 import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.ss.usermodel.Row
 import org.apache.poi.ss.usermodel.WorkbookFactory
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.FileInputStream
+import java.io.FileOutputStream
 import kotlin.math.roundToInt
 
 interface AdminService {
@@ -44,6 +47,7 @@ interface AdminService {
   suspend fun addContact(email: String, nickname: String)
   suspend fun deleteContact(email: String)
   suspend fun setStage(email: String)
+  suspend fun collectResults(): Map<String, StageReport?>
 }
 
 val Row.asPerformance: Performance?
@@ -71,21 +75,22 @@ val Row.asPerformance: Performance?
     )
   }
 
-fun performanceFlow(spreadSheet: ParcelFileDescriptor): Flow<Pair<Float, Performance>> = callbackFlow {
-  withContext(Dispatchers.IO) {
-    FileInputStream(spreadSheet.fileDescriptor).use { stream ->
-      for (sheet in WorkbookFactory.create(stream)) {
-        val count = sheet.lastRowNum + 1
-        for (row in sheet) {
-          val performance = row!!.asPerformance ?: continue
-          val progress = 1f * (row.rowNum + 1) / count
-          send(progress to performance)
+fun performanceFlow(spreadSheet: ParcelFileDescriptor): Flow<Pair<Float, Performance>> =
+  callbackFlow {
+    withContext(Dispatchers.IO) {
+      FileInputStream(spreadSheet.fileDescriptor).use { stream ->
+        for (sheet in WorkbookFactory.create(stream)) {
+          val count = sheet.lastRowNum + 1
+          for (row in sheet) {
+            val performance = row!!.asPerformance ?: continue
+            val progress = 1f * (row.rowNum + 1) / count
+            send(progress to performance)
+          }
         }
       }
     }
+    awaitClose { }
   }
-  awaitClose {  }
-}
 
 suspend fun uploadJob(
   spreadSheet: ParcelFileDescriptor,
@@ -99,10 +104,45 @@ suspend fun uploadJob(
   reportProgress(1f)
 }
 
+suspend fun saveJob(
+  spreadSheet: ParcelFileDescriptor,
+  results: Map<String, StageReport?>,
+  reportProgress: (Float) -> Unit,
+) {
+  withContext(Dispatchers.IO) {
+    val workbook = XSSFWorkbook()
+    val sheet = workbook.createSheet()
+    var count = 0
+    val juryColumns = mutableMapOf<String, Int>()
+    for ((id, report) in results) {
+      sheet.createRow(++count).run {
+        createCell(0).setCellValue(id)
+        createCell(1).setCellValue(report?.averageRating ?: Double.NaN)
+        for ((jury, comment) in report?.comments ?: mapOf()) {
+          val column = juryColumns.computeIfAbsent(jury) {
+            juryColumns.maxOfOrNull { it.value + 1 } ?: 2
+          }
+          createCell(column).setCellValue(comment)
+        }
+      }
+      reportProgress(1f * count / results.size)
+    }
+    sheet.createRow(0).run {
+      createCell(0).setCellValue("№")
+      createCell(1).setCellValue("Средняя оценка")
+      for ((jury, col) in juryColumns) {
+        createCell(col).setCellValue(jury)
+      }
+    }
+    FileOutputStream(spreadSheet.fileDescriptor).use(workbook::write)
+  }
+}
+
 @Composable
 fun AdminService.Admin() {
   var spreadSheetUri: Uri? by rememberSaveable { mutableStateOf(null) }
-  val spreadSheet: ParcelFileDescriptor? = spreadSheetUri?.let { LocalContext.current.contentResolver.openFileDescriptor(it, "r") }
+  val spreadSheet =
+    spreadSheetUri?.let { LocalContext.current.contentResolver.openFileDescriptor(it, "r") }
   val spreadSheetPicker = rememberLauncherForActivityResult(
     contract = ActivityResultContracts.OpenDocument(),
     onResult = { if (it != null) spreadSheetUri = it },
@@ -129,6 +169,22 @@ fun AdminService.Admin() {
       uploadJob(it, ::addPerformance) { progress -> performanceUploadProgress = progress }
     }
   }
+  var saveUri: Uri? by rememberSaveable { mutableStateOf(null) }
+  val saveDesc = saveUri?.let { LocalContext.current.contentResolver.openFileDescriptor(it, "w") }
+  val savePicker = rememberLauncherForActivityResult(
+    contract = ActivityResultContracts.CreateDocument(
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    ),
+    onResult = { if (it != null) saveUri = it }
+  )
+  val askToSave = { savePicker.launch(null) }
+  var saveProgress by rememberSaveable { mutableStateOf(0f) }
+  LaunchedEffect(saveDesc) {
+    saveDesc?.use {
+      saveProgress = 0f
+      saveJob(it, collectResults()) { progress -> saveProgress = progress }
+    }
+  }
   val scope = rememberCoroutineScope()
   Scaffold(
     bottomBar = {
@@ -151,6 +207,12 @@ fun AdminService.Admin() {
             },
           )
           Text(text = stringResource(R.string.comments))
+        }
+        Button(onClick = askToSave) {
+          Column {
+            Text(text = "Сохранить результаты")
+            LinearProgressIndicator(progress = saveProgress.coerceIn(0f, 1f))
+          }
         }
       }
     }

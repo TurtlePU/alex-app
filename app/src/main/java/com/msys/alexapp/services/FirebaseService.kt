@@ -7,7 +7,10 @@ import com.google.firebase.database.ktx.snapshots
 import com.msys.alexapp.components.AlexAppService
 import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.Role
+import com.msys.alexapp.data.StageReport
+import com.msys.alexapp.data.StageReport.Companion.asStageReportOrNull
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 
@@ -40,7 +43,14 @@ object FirebaseService : AlexAppService {
   }
 
   override suspend fun setStage(email: String) {
+    admin.child("contacts/${currentEmail.replace('.', ',')}").setValue("admin").await()
     admin.chooseFriends(Role.ADMIN, mapOf(email.replace('.', ',') to email.replace('.', ',')))
+  }
+
+  override suspend fun collectResults(): Map<String, StageReport?> {
+    val stage = invitationsFrom(Role.STAGE).first().firstOrNull() ?: return mapOf()
+    val snap = data.child("$stage/report").get().await()
+    return snap.children.associate { it.key!! to it.asStageReportOrNull }
   }
 
   override fun invitationsFrom(role: Role): Flow<List<String>> {
