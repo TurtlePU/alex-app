@@ -35,18 +35,13 @@ class FirebaseStageService(adminID: String) : FirebaseStageServiceBase(adminID),
     get() = staged.orderByKey().limitToFirst(2).snapshots.map {
       it.children.drop(1).firstOrNull()?.let { child -> child.getValue<String>()!! }
     }
+  override val juryIDs: Flow<List<String>> get() = FirebaseService.invitationsFrom(Role.JURY)
 
-  @OptIn(ExperimentalCoroutinesApi::class)
-  override fun performanceDashboard(id: String): Flow<Map<String, JuryNote>> =
-    FirebaseService
-      .invitationsFrom(Role.JURY)
-      .flatMapLatest { juryIDs ->
-        combine(juryIDs.map { jury ->
-          val rFlow = data.child("$jury/report/$id").snapshots.map { it.asJuryReport }
-          val nFlow = data.child("$jury/nickname").snapshots.map { it.getValue<String>()!! }
-          nFlow.zip(rFlow) { nickname, report -> jury to JuryNote(nickname, report) }
-        }, Array<Pair<String, JuryNote>>::toMap)
-      }
+  override fun readNote(juryID: String, performanceID: String): Flow<JuryNote?> =
+    data.child(juryID).snapshots.map { jury ->
+      jury.child("nickname").getValue<String>()
+        ?.let { JuryNote(it, jury.child("report/$performanceID").asJuryReport) }
+    }
 
   override suspend fun dropStaged(key: String) {
     staged.child(key).removeValue().await()
@@ -68,7 +63,11 @@ class FirebaseStageService(adminID: String) : FirebaseStageServiceBase(adminID),
     }
   }
 
-  override suspend fun publishComments(performanceID: String, comments: Map<String, String>) {
-    stage.child("report/$performanceID/comments").setValue(comments).await()
+  override suspend fun publishComment(
+    performanceID: String,
+    juryNickname: String,
+    comment: String
+  ) {
+    stage.child("report/$performanceID/comments/$juryNickname").setValue(comment).await()
   }
 }

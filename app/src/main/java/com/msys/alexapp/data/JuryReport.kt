@@ -9,10 +9,12 @@ data class JuryReport(
 ) {
   companion object {
     val DataSnapshot.asJuryReport
-      get() = JuryReport(
-        child("rating").getValue<Double>()!!,
-        child("comment").getValue<String>()
-      )
+      get() : JuryReport? {
+        return JuryReport(
+          child("rating").getValue<Double>() ?: return null,
+          child("comment").getValue<String>()
+        )
+      }
   }
 
   fun toMap(): Map<String, Any?> = mapOf(

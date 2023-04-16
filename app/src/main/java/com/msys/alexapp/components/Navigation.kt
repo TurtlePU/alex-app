@@ -33,37 +33,37 @@ fun AlexAppService.NavComposable() {
       }
     }
     composable(ADMIN.toString()) { Admin() }
-    navigation(route = STAGE.toString(), startDestination = "invitations") {
-      composable("invitations") {
+    navigation(route = STAGE.toString(), startDestination = "stage/invitations") {
+      composable("stage/invitations") {
         Invitations(invitationsFrom(ADMIN)) { id ->
-          navController.navigate("list/$id") {
+          navController.navigate("stage/list/$id") {
             launchSingleTop = true
           }
         }
       }
-      composable("list/{adminID}") { backStack ->
+      composable("stage/list/{adminID}") { backStack ->
         val adminID = backStack.arguments!!.getString("adminID")!!
         stagePreparationService(adminID).PerformanceList {
-          navController.navigate("stage/$adminID") {
+          navController.navigate("stage/stage/$adminID") {
             restoreState = true
           }
         }
       }
-      composable("stage/{adminID}") { backStack ->
+      composable("stage/stage/{adminID}") { backStack ->
         val adminID = backStack.arguments!!.getString("adminID")!!
         stageService(adminID).Carousel {
           navController.popBackStack()
-          navController.clearBackStack("stage/$adminID")
+          navController.clearBackStack("stage/stage/$adminID")
         }
       }
     }
-    navigation(route = JURY.toString(), startDestination = "invitations") {
-      composable("invitations") {
+    navigation(route = JURY.toString(), startDestination = "jury/invitations") {
+      composable("jury/invitations") {
         Invitations(invitationsFrom(STAGE)) { id ->
-          navController.navigate("carousel/$id")
+          navController.navigate("jury/carousel/$id")
         }
       }
-      composable("carousel/{stageID}") { backStack ->
+      composable("jury/carousel/{stageID}") { backStack ->
         juryService(backStack.arguments!!.getString("stageID")!!).Carousel {
           navController.popBackStack("authorization", inclusive = false)
         }
@@ -99,6 +99,7 @@ fun DefaultPreview() {
         override val stagedFlow: Flow<List<String>> get() = flowOf()
         override val reportFlow: Flow<Map<String, StageReport>> get() = flowOf()
         override suspend fun sendInvitations() {}
+        override suspend fun dropCurrent() {}
         override suspend fun newPerformance(performance: Performance) {}
         override suspend fun appendToStage(stage: List<String>) {}
       }
@@ -107,14 +108,16 @@ fun DefaultPreview() {
         override val canCommentFlow: Flow<Boolean> get() = flowOf()
         override val firstStagedPerformance: Flow<Pair<String, Performance>?> get() = flowOf()
         override val nextStagedPerformance: Flow<String?> get() = flowOf()
-        override fun performanceDashboard(id: String): Flow<Map<String, JuryNote>> = flowOf()
+        override val juryIDs: Flow<List<String>> get() = flowOf()
+        override fun readNote(juryID: String, performanceID: String): Flow<JuryNote?> = flowOf()
         override suspend fun dropStaged(key: String) {}
         override suspend fun setCanComment(canComment: Boolean) {}
         override suspend fun setCurrent(performance: Performance, deadline: Date) {}
         override suspend fun sendAverageRating(performanceID: String, averageRating: Double) {}
-        override suspend fun publishComments(
+        override suspend fun publishComment(
           performanceID: String,
-          comments: Map<String, String>
+          juryNickname: String,
+          comment: String
         ) {
         }
       }

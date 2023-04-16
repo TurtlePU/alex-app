@@ -43,13 +43,13 @@ object FirebaseService : AlexAppService {
     admin.chooseFriends(Role.ADMIN, mapOf(email.replace('.', ',') to email.replace('.', ',')))
   }
 
-  override fun invitationsFrom(role: Role) =
-    FirebaseDatabase.getInstance()
-      .getReference("invitations")
-      .child(currentEmail.replace('.', ','))
-      .snapshots.map { data ->
+  override fun invitationsFrom(role: Role): Flow<List<String>> {
+    val invitationKey = currentEmail.replace('.', ',')
+    return FirebaseDatabase.getInstance()
+      .getReference("invitations/$invitationKey").snapshots.map { data ->
         data.children.filter { it.value == role.toString() }.map { it.key!! }
       }
+  }
 
   override fun juryService(stageID: String) = FirebaseJuryService(stageID)
   override fun stagePreparationService(adminID: String) = FirebaseStagePreparationService(adminID)

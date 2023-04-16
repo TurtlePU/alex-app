@@ -8,17 +8,14 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.NavigateNext
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
-import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.JuryReport
+import com.msys.alexapp.data.Performance
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import java.util.*
@@ -26,43 +23,42 @@ import java.util.*
 data class JuryNote(
   val nickname: String,
   val report: JuryReport?,
-) {
-  val toCommentPair: Pair<String, String>? get() = report?.comment?.let { nickname to it }
-}
+)
 
 interface StageService {
   val canCommentFlow: Flow<Boolean>
   val firstStagedPerformance: Flow<Pair<String, Performance>?>
   val nextStagedPerformance: Flow<String?>
-  fun performanceDashboard(id: String): Flow<Map<String, JuryNote>>
+  val juryIDs: Flow<List<String>>
+  fun readNote(juryID: String, performanceID: String): Flow<JuryNote?>
   suspend fun dropStaged(key: String)
   suspend fun setCanComment(canComment: Boolean)
   suspend fun setCurrent(performance: Performance, deadline: Date)
   suspend fun sendAverageRating(performanceID: String, averageRating: Double)
-  suspend fun publishComments(performanceID: String, comments: Map<String, String>)
+  suspend fun publishComment(performanceID: String, juryNickname: String, comment: String)
 }
 
 @Composable
 fun StageService.Carousel(finishStage: () -> Unit) {
   val canComment by canCommentFlow.collectAsStateWithLifecycle(initialValue = false)
+  val jury by juryIDs.collectAsStateWithLifecycle(initialValue = listOf())
   LaunchedEffect(canComment) { setCanComment(canComment) }
   firstStagedPerformance.collectAsStateWithLifecycle(initialValue = null).value
-    ?.let { (key, perf) -> PerformanceDashboard(perf, finishStage) { dropStaged(key) } }
+    ?.let { (key, perf) -> PerformanceDashboard(perf, jury, finishStage) { dropStaged(key) } }
     ?: FinishStage(finishStage)
 }
 
 @Composable
 fun StageService.PerformanceDashboard(
   performance: Performance,
+  juryIDs: List<String>,
   finishStage: () -> Unit,
   dropStaged: suspend () -> Unit,
 ) {
   val deadline = rememberSaveable { currentDate().time + timeout.inWholeMilliseconds }
   LaunchedEffect(true) { setCurrent(performance, Date(deadline)) }
-  val dashboard by performanceDashboard(performance.id).collectAsStateWithLifecycle(mapOf())
-  val canFinish = dashboard.all { it.value.report != null }
-  val averageRating = dashboard.mapNotNull { it.value.report?.rating }.average()
-  val comments = dashboard.values.mapNotNull(JuryNote::toCommentPair).toMap()
+  var canFinish by rememberSaveable { mutableStateOf(false) }
+  var averageRating by rememberSaveable { mutableStateOf(Double.NaN) }
   LaunchedEffect(averageRating) { sendAverageRating(performance.id, averageRating) }
   val scope = rememberCoroutineScope()
   performance.View(
@@ -77,15 +73,33 @@ fun StageService.PerformanceDashboard(
     },
     bottomBar = { RatingBar(averageRating) },
     floatingActionButton = {
-      val finishPerformance: suspend () -> Unit = {
-        publishComments(performance.id, comments)
-        dropStaged()
-      }
       nextStagedPerformance.collectAsStateWithLifecycle(initialValue = null).value
-        ?.let { id -> NextButton(id, canFinish) { scope.launch { finishPerformance() } } }
-        ?: FinishButton(canFinish) { scope.launch { finishPerformance(); finishStage() } }
+        ?.let { id -> NextButton(id, canFinish) { scope.launch { dropStaged() } } }
+        ?: FinishButton(canFinish) {
+          scope.launch { dropStaged(); finishStage() }
+        }
     }
-  ) { JuryRow(dashboard.values) }
+  ) {
+    Row {
+      val list = mutableListOf<Double>()
+      var allRated = true
+      for (juryID in juryIDs) {
+        val note by readNote(juryID, performance.id).collectAsStateWithLifecycle(null)
+        Card {
+          Text(text = note?.nickname ?: "Абырвалг")
+          Text(text = note?.report?.rating?.toString() ?: "")
+          Text(text = note?.report?.comment ?: "")
+        }
+        allRated = allRated && note?.report?.rating != null
+        note?.report?.rating?.let { list.add(it) }
+        LaunchedEffect(note?.nickname, note?.report?.comment) {
+          note?.report?.comment?.let { publishComment(performance.id, note!!.nickname, it) }
+        }
+      }
+      canFinish = allRated
+      averageRating = list.average()
+    }
+  }
 }
 
 @Composable
@@ -107,19 +121,6 @@ fun place(rating: Double): Int = when {
   rating >= 7.5 -> R.string.diploma_2
   rating >= 7.0 -> R.string.diploma_3
   else -> R.string.participant
-}
-
-@Composable
-fun JuryRow(dashboard: Collection<JuryNote>) {
-  Row {
-    for (note in dashboard) {
-      Card {
-        Text(text = note.nickname)
-        Text(text = note.report?.rating?.toString() ?: "")
-        Text(text = note.report?.comment ?: "")
-      }
-    }
-  }
 }
 
 @Composable

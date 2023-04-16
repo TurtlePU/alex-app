@@ -38,15 +38,16 @@ interface JuryService {
 
 @Composable
 fun JuryService.Carousel(exit: () -> Unit) {
-  LaunchedEffect(true) {
+  val performance by currentPerformance.collectAsStateWithLifecycle(initialValue = null)
+  val view = performance
+  LaunchedEffect(Unit) {
     sendInvitation()
   }
-  val performance by currentPerformance.collectAsStateWithLifecycle(initialValue = null)
-  performance?.let {
+  view?.let {
     val hidePage by isEvaluated(it.id).collectAsStateWithLifecycle(initialValue = true)
     if (hidePage) {
       val rating by averageRating(it.id).collectAsStateWithLifecycle(initialValue = .0)
-      RatingPage(rating!!)
+      RatingPage(rating ?: Double.NaN)
     } else {
       val advice by juryAdvice.collectAsStateWithLifecycle(initialValue = Advice(currentDate()))
       advice.PerformancePage(it) { report -> evaluate(it.id, report) }

@@ -5,9 +5,9 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.database.ktx.snapshots
 import com.msys.alexapp.components.StagePreparationService
-import com.msys.alexapp.data.StageReport
 import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.Role
+import com.msys.alexapp.data.StageReport
 import com.msys.alexapp.data.StageReport.Companion.asStageReport
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -32,7 +32,7 @@ class FirebaseStagePreparationService(adminID: String) : FirebaseStageServiceBas
         .map { it.getValue<String>()!! }
     }
   override val reportFlow: Flow<Map<String, StageReport>>
-    get() = staged.child("report").snapshots.map { reports ->
+    get() = stage.child("report").snapshots.map { reports ->
       reports.children.associate { it.key!! to it.asStageReport }
     }
 
@@ -41,6 +41,10 @@ class FirebaseStagePreparationService(adminID: String) : FirebaseStageServiceBas
     val task = stage.child("contacts").setValue(contacts)
     stage.chooseFriends(Role.STAGE, contacts)
     task.await()
+  }
+
+  override suspend fun dropCurrent() {
+    stage.child("current").removeValue().await()
   }
 
   override suspend fun newPerformance(performance: Performance) {

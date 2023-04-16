@@ -35,6 +35,7 @@ interface StagePreparationService {
   val stagedFlow: Flow<List<String>>
   val reportFlow: Flow<Map<String, StageReport>>
   suspend fun sendInvitations()
+  suspend fun dropCurrent()
   suspend fun newPerformance(performance: Performance)
   suspend fun appendToStage(stage: List<String>)
 }
@@ -61,6 +62,7 @@ fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
   var ready by rememberSaveable { mutableStateOf(false) }
   LaunchedEffect(true) {
     sendInvitations()
+    dropCurrent()
     ready = true
   }
   val performances by performancesFlow.collectAsStateWithLifecycle(initialValue = listOf())

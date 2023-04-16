@@ -20,7 +20,12 @@ class FirebaseJuryService(private val stageID: String) : JuryService {
 
   private val stage: DatabaseReference get() = data.child(stageID)
   override val currentPerformance: Flow<Performance?>
-    get() = stage.child("current").snapshots.map { it.children.firstOrNull()?.asPerformance }
+    get() {
+      val current = stage.child("current").snapshots
+      return current.map {
+        it.children.firstOrNull()?.asPerformance
+      }
+    }
   override val juryAdvice: Flow<Advice>
     get() = stage.child("advice").snapshots.map {
       Advice(
@@ -29,7 +34,8 @@ class FirebaseJuryService(private val stageID: String) : JuryService {
       )
     }
 
-  override fun isEvaluated(id: String): Flow<Boolean> = jury.child(id).snapshots.map { it.exists() }
+  override fun isEvaluated(id: String): Flow<Boolean> =
+    jury.child("report/$id").snapshots.map { it.exists() }
 
   override fun averageRating(id: String) =
     stage.child("report/$id/average").snapshots.map { it.getValue<Double>() }

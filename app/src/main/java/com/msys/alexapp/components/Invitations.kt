@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,7 +19,9 @@ fun Invitations(invitationsFlow: Flow<List<String>>, reportInvitation: (String) 
   if (invitations.isEmpty()) {
     BigBox { CircularProgressIndicator() }
   } else if (invitations.size == 1) {
-    reportInvitation(invitations[0])
+    LaunchedEffect(invitations) {
+      reportInvitation(invitations[0])
+    }
   } else {
     InvitationsPicker(invitations, reportInvitation)
   }

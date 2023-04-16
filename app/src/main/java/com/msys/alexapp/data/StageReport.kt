@@ -5,10 +5,11 @@ import com.google.firebase.database.ktx.getValue
 
 data class StageReport(val averageRating: Double, val comments: Map<String, String>) {
   companion object {
-    val DataSnapshot.asStageReport
-      get() = StageReport(
-        averageRating = child("rating").getValue<Double>()!!,
-        comments = child("comments").getValue<Map<String, String>>() ?: mapOf(),
-      )
+    val DataSnapshot.asStageReport: StageReport
+      get() {
+        val rating = child("average").getValue<Double>()!!
+        val comments = child("comments").getValue<Map<String, String>>() ?: mapOf()
+        return StageReport(rating, comments)
+      }
   }
 }
