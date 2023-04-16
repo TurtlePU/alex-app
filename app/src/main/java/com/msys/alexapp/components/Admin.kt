@@ -19,10 +19,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
 import com.msys.alexapp.data.Performance
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.apache.poi.ss.usermodel.CellType
+import org.apache.poi.ss.usermodel.Row
+import org.apache.poi.ss.usermodel.WorkbookFactory
+import java.io.FileInputStream
+import kotlin.math.roundToInt
 
 interface AdminService {
   val contactsFlow: Flow<Map<String, String>>
@@ -32,22 +40,56 @@ interface AdminService {
   suspend fun deleteContact(email: String)
 }
 
-suspend fun performanceCount(spreadSheetUri: Uri): Int = TODO()
+val Row.asPerformance: Performance?
+  get() {
+    val id =
+      if (getCell(6).cellTypeEnum == CellType.NUMERIC) getCell(10).numericCellValue.roundToInt()
+      else return null
+    val nomination =
+      if (getCell(7).cellTypeEnum == CellType.STRING) getCell(7).stringCellValue
+      else return null
+    val name =
+      if (getCell(10).cellTypeEnum == CellType.STRING) getCell(10).stringCellValue
+      else return null
+    val performance =
+      if (getCell(11).cellTypeEnum == CellType.STRING) getCell(11).stringCellValue
+      else return null
+    return Performance(
+      id = id.toString(),
+      nomination = nomination,
+      name = name,
+      performance = performance,
+      age = null,
+      city = null,
+      category = null,
+    )
+  }
 
-fun performanceFlow(spreadSheetUri: Uri): Flow<Performance> = TODO()
+fun performanceFlow(spreadSheetUri: Uri): Flow<Pair<Float, Performance>> = flow {
+  withContext(Dispatchers.IO) {
+    FileInputStream(spreadSheetUri.path!!).use { stream ->
+      for (sheet in WorkbookFactory.create(stream)) {
+        val count = sheet.lastRowNum + 1
+        for (row in sheet) {
+          val performance = row!!.asPerformance ?: continue
+          val progress = 1f * (row.rowNum + 1) / count
+          emit(progress to performance)
+        }
+      }
+    }
+  }
+}
 
 suspend fun uploadJob(
   spreadSheetUri: Uri,
   addPerformance: suspend (Performance) -> Unit,
   reportProgress: (Float) -> Unit,
 ) {
-  val count = performanceCount(spreadSheetUri)
-  var index = 0
   performanceFlow(spreadSheetUri).onEach {
-    addPerformance(it)
-    index += 1
-    reportProgress(1f * index / count)
+    addPerformance(it.second)
+    reportProgress(it.first)
   }.collect()
+  reportProgress(1f)
 }
 
 @Composable
