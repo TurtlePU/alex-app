@@ -10,9 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.input.*
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.msys.alexapp.R
@@ -58,7 +56,12 @@ fun AuthorizationService.Authorization(become: (Role) -> Unit) {
       value = email ?: "",
       onValueChange = { email = it },
       modifier = Modifier.fillMaxWidth(),
-      keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+      keyboardOptions = KeyboardOptions(
+        capitalization = KeyboardCapitalization.None,
+        autoCorrect = false,
+        keyboardType = KeyboardType.Email,
+        imeAction = ImeAction.Next,
+      ),
     )
     Spacer(modifier = Modifier.padding(3.dp))
     OutlinedTextField(
@@ -78,7 +81,12 @@ fun AuthorizationService.Authorization(become: (Role) -> Unit) {
       visualTransformation =
       if (passwordHidden) PasswordVisualTransformation()
       else VisualTransformation.None,
-      keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+      keyboardOptions = KeyboardOptions(
+        capitalization = KeyboardCapitalization.None,
+        autoCorrect = false,
+        keyboardType = KeyboardType.Password,
+        imeAction = ImeAction.Done,
+      ),
     )
     Spacer(modifier = Modifier.padding(1.dp))
     Row(horizontalArrangement = Arrangement.SpaceBetween) {
