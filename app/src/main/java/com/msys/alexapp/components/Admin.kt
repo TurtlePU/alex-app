@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Cancel
@@ -19,6 +20,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
 import com.msys.alexapp.data.Performance
@@ -174,8 +178,21 @@ fun AdminService.Admin() {
         if (editing) {
           var email: String? by rememberSaveable { mutableStateOf(null) }
           var nickname: String? by rememberSaveable { mutableStateOf(null) }
-          TextField(value = email ?: "", onValueChange = { email = it })
-          TextField(value = nickname ?: "", onValueChange = { nickname = it })
+          TextField(
+            value = email ?: "",
+            onValueChange = { email = it },
+            keyboardOptions = KeyboardOptions(
+              capitalization = KeyboardCapitalization.None,
+              autoCorrect = false,
+              keyboardType = KeyboardType.Email,
+              imeAction = ImeAction.Next,
+            )
+          )
+          TextField(
+            value = nickname ?: "",
+            onValueChange = { nickname = it },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+          )
           Button(
             onClick = { scope.launch { addContact(email!!, nickname!!); editing = false } },
             enabled = email != null && nickname != null
