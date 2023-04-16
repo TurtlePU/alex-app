@@ -63,7 +63,9 @@ class FirebaseStageService(adminID: String) : FirebaseStageServiceBase(adminID),
   }
 
   override suspend fun sendAverageRating(performanceID: String, averageRating: Double) {
-    stage.child("report/$performanceID/average").setValue(averageRating).await()
+    if (!averageRating.isNaN()) {
+      stage.child("report/$performanceID/average").setValue(averageRating).await()
+    }
   }
 
   override suspend fun publishComments(performanceID: String, comments: Map<String, String>) {

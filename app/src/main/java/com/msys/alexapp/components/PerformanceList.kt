@@ -66,7 +66,7 @@ fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
   val performances by performancesFlow.collectAsStateWithLifecycle(initialValue = listOf())
   val staged by stagedFlow.collectAsStateWithLifecycle(initialValue = listOf())
   val stagedSet = staged.toSet()
-  val onStage = rememberSaveable { mutableStateMapOf<String, Unit>() }
+  val onStage = remember { mutableStateMapOf<String, Unit>() }
   val isStaged: (String) -> Boolean = { stagedSet.contains(it) || onStage.containsKey(it) }
   val reports by reportFlow.collectAsStateWithLifecycle(initialValue = mapOf())
   var currentTab by remember { mutableStateOf(STAGING) }
@@ -89,7 +89,7 @@ fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
       }
     },
     floatingActionButton = {
-      if (currentTab == STAGING && ready && !onStage.isEmpty()) {
+      if (currentTab == STAGING && ready && (onStage.isNotEmpty() || staged.isNotEmpty())) {
         val scope = rememberCoroutineScope()
         FloatingActionButton(
           onClick = { scope.launch { appendToStage(onStage.keys.toList()); startStage() } },

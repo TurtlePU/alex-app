@@ -1,8 +1,10 @@
 package com.msys.alexapp.components
 
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -15,15 +17,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
 import com.msys.alexapp.data.Performance
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.apache.poi.ss.usermodel.CellType
@@ -38,21 +39,22 @@ interface AdminService {
   suspend fun addPerformance(performance: Performance)
   suspend fun addContact(email: String, nickname: String)
   suspend fun deleteContact(email: String)
+  suspend fun setStage(email: String)
 }
 
 val Row.asPerformance: Performance?
   get() {
     val id =
-      if (getCell(6).cellTypeEnum == CellType.NUMERIC) getCell(10).numericCellValue.roundToInt()
+      if (getCell(6)?.cellTypeEnum == CellType.NUMERIC) getCell(6).numericCellValue.roundToInt()
       else return null
     val nomination =
-      if (getCell(7).cellTypeEnum == CellType.STRING) getCell(7).stringCellValue
+      if (getCell(7)?.cellTypeEnum == CellType.STRING) getCell(7).stringCellValue
       else return null
     val name =
-      if (getCell(10).cellTypeEnum == CellType.STRING) getCell(10).stringCellValue
+      if (getCell(10)?.cellTypeEnum == CellType.STRING) getCell(10).stringCellValue
       else return null
     val performance =
-      if (getCell(11).cellTypeEnum == CellType.STRING) getCell(11).stringCellValue
+      if (getCell(11)?.cellTypeEnum == CellType.STRING) getCell(11).stringCellValue
       else return null
     return Performance(
       id = id.toString(),
@@ -65,27 +67,28 @@ val Row.asPerformance: Performance?
     )
   }
 
-fun performanceFlow(spreadSheetUri: Uri): Flow<Pair<Float, Performance>> = flow {
+fun performanceFlow(spreadSheet: ParcelFileDescriptor): Flow<Pair<Float, Performance>> = callbackFlow {
   withContext(Dispatchers.IO) {
-    FileInputStream(spreadSheetUri.path!!).use { stream ->
+    FileInputStream(spreadSheet.fileDescriptor).use { stream ->
       for (sheet in WorkbookFactory.create(stream)) {
         val count = sheet.lastRowNum + 1
         for (row in sheet) {
           val performance = row!!.asPerformance ?: continue
           val progress = 1f * (row.rowNum + 1) / count
-          emit(progress to performance)
+          send(progress to performance)
         }
       }
     }
   }
+  awaitClose {  }
 }
 
 suspend fun uploadJob(
-  spreadSheetUri: Uri,
+  spreadSheet: ParcelFileDescriptor,
   addPerformance: suspend (Performance) -> Unit,
   reportProgress: (Float) -> Unit,
 ) {
-  performanceFlow(spreadSheetUri).onEach {
+  performanceFlow(spreadSheet).onEach {
     addPerformance(it.second)
     reportProgress(it.first)
   }.collect()
@@ -95,14 +98,29 @@ suspend fun uploadJob(
 @Composable
 fun AdminService.Admin() {
   var spreadSheetUri: Uri? by rememberSaveable { mutableStateOf(null) }
+  val spreadSheet: ParcelFileDescriptor? = spreadSheetUri?.let { LocalContext.current.contentResolver.openFileDescriptor(it, "r") }
   val spreadSheetPicker = rememberLauncherForActivityResult(
     contract = ActivityResultContracts.OpenDocument(),
     onResult = { if (it != null) spreadSheetUri = it },
   )
-  val askSpreadSheet = { spreadSheetPicker.launch(arrayOf("application/vnd.ms-excel")) }
+  val askSpreadSheet = {
+    spreadSheetPicker.launch(
+      arrayOf(
+        "application/vnd.ms-excel",
+        "application/msexcel",
+        "application/x-msexcel",
+        "application/x-ms-excel",
+        "application/x-excel",
+        "application/x-dos_ms_excel",
+        "application/xls",
+        "application/x-xls",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      )
+    )
+  }
   var performanceUploadProgress by rememberSaveable { mutableStateOf(0f) }
-  LaunchedEffect(spreadSheetUri) {
-    spreadSheetUri?.let {
+  LaunchedEffect(spreadSheet) {
+    spreadSheet?.use {
       performanceUploadProgress = 0f
       uploadJob(it, ::addPerformance) { progress -> performanceUploadProgress = progress }
     }
@@ -137,8 +155,12 @@ fun AdminService.Admin() {
     Column(modifier = Modifier.padding(padding)) {
       for ((email, nickname) in contacts) {
         Row {
-          Text(text = email)
-          Text(text = nickname)
+          Row(
+            modifier = Modifier.clickable { scope.launch { setStage(email) } }
+          ) {
+            Text(text = email)
+            Text(text = nickname)
+          }
           Button(onClick = { scope.launch { deleteContact(email) } }) {
             Icon(
               imageVector = Icons.Filled.Delete,

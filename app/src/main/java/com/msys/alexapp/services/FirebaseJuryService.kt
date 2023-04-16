@@ -36,7 +36,7 @@ class FirebaseJuryService(private val stageID: String) : JuryService {
 
   override suspend fun sendInvitation() {
     val contacts = stage.child("contacts").get().await().getValue<Map<String, String>>()!!
-    jury.child("nickname").setValue(contacts[currentEmail]).await()
+    jury.child("nickname").setValue(contacts[currentEmail.replace('.', ',')]).await()
     jury.chooseFriends(Role.JURY, contacts)
   }
 

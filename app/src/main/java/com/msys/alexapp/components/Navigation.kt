@@ -78,6 +78,12 @@ fun DefaultPreview() {
   AlexAppTheme {
     object : AlexAppService {
       override suspend fun signIn(email: String, password: String) {}
+      override val contactsFlow: Flow<Map<String, String>> get() = flowOf()
+      override suspend fun setCanComment(canComment: Boolean) {}
+      override suspend fun addPerformance(performance: Performance) {}
+      override suspend fun addContact(email: String, nickname: String) {}
+      override suspend fun deleteContact(email: String) {}
+      override suspend fun setStage(email: String) {}
       override fun invitationsFrom(role: Role) = flowOf(listOf("wow"))
       override fun juryService(stageID: String) = object : JuryService {
         override val currentPerformance: Flow<Performance> get() = flowOf()

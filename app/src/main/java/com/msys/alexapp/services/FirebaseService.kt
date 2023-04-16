@@ -12,14 +12,16 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 
 object FirebaseService : AlexAppService {
-  private val admin = data.child(currentUID)
+  private val admin get() = data.child(currentUID)
 
   override suspend fun signIn(email: String, password: String) {
     FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password).await()
   }
 
   override val contactsFlow: Flow<Map<String, String>>
-    get() = admin.child("contacts").snapshots.map { it.getValue<Map<String, String>>()!! }
+    get() = admin.child("contacts").snapshots
+      .map { it.getValue<Map<String, String>>() ?: mapOf() }
+      .map { it.mapKeys { it.key.replace(',', '.') } }
 
   override suspend fun setCanComment(canComment: Boolean) {
     admin.child("canComment").setValue(canComment).await()
@@ -30,17 +32,21 @@ object FirebaseService : AlexAppService {
   }
 
   override suspend fun addContact(email: String, nickname: String) {
-    admin.child("contacts/$email").setValue(nickname).await()
+    admin.child("contacts/${email.replace('.', ',')}").setValue(nickname).await()
   }
 
   override suspend fun deleteContact(email: String) {
-    admin.child("contacts/$email").removeValue().await()
+    admin.child("contacts/${email.replace('.', ',')}").removeValue().await()
+  }
+
+  override suspend fun setStage(email: String) {
+    admin.chooseFriends(Role.ADMIN, mapOf(email.replace('.', ',') to email.replace('.', ',')))
   }
 
   override fun invitationsFrom(role: Role) =
     FirebaseDatabase.getInstance()
       .getReference("invitations")
-      .child(currentEmail)
+      .child(currentEmail.replace('.', ','))
       .snapshots.map { data ->
         data.children.filter { it.value == role.toString() }.map { it.key!! }
       }
