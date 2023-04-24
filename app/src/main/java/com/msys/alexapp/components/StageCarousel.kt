@@ -89,7 +89,7 @@ fun StageService.PerformanceDashboard(
       for (juryID in juryIDs) {
         val note by readNote(juryID, performance.id).collectAsStateWithLifecycle(null)
         Card {
-          Text(text = note?.nickname ?: "Абырвалг")
+          Text(text = note?.nickname ?: stringResource(R.string.default_jury_nickname))
           Text(text = note?.report?.rating?.toString() ?: "")
           Text(text = note?.report?.comment ?: "")
         }

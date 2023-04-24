@@ -29,4 +29,5 @@
     <string name="add_contact">Добавить контакт</string>
     <string name="cancel">Отмена</string>
     <string name="skip_participant">Пропустить участника</string>
+    <string name="default_jury_nickname">Абырвалг</string>
 </resources>
