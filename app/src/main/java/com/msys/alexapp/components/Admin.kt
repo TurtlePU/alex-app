@@ -1,7 +1,11 @@
 package com.msys.alexapp.components
 
+import android.content.ContentValues
+import android.content.Context
 import android.net.Uri
+import android.os.Environment
 import android.os.ParcelFileDescriptor
+import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -29,7 +33,10 @@ import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.StageReport
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.apache.poi.ss.usermodel.CellType
@@ -38,6 +45,7 @@ import org.apache.poi.ss.usermodel.WorkbookFactory
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.OutputStream
 import kotlin.math.roundToInt
 
 interface AdminService {
@@ -105,7 +113,7 @@ suspend fun uploadJob(
 }
 
 suspend fun saveJob(
-  spreadSheet: ParcelFileDescriptor,
+  outputStream: OutputStream,
   results: Map<String, StageReport?>,
   reportProgress: (Float) -> Unit,
 ) {
@@ -134,7 +142,20 @@ suspend fun saveJob(
         createCell(col).setCellValue(jury)
       }
     }
-    FileOutputStream(spreadSheet.fileDescriptor).use(workbook::write)
+    outputStream.use(workbook::write)
+  }
+}
+
+fun Context.fileOutputStream(mimeType: String, displayName: String): OutputStream {
+  val values = ContentValues().apply {
+    put(MediaStore.MediaColumns.DISPLAY_NAME, displayName)
+    put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
+    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DCIM)
+  }
+  return with(contentResolver) {
+    insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)?.let {
+      openOutputStream(it)
+    }!!
   }
 }
 
@@ -170,17 +191,18 @@ fun AdminService.Admin() {
     }
   }
   var saveUri: Uri? by rememberSaveable { mutableStateOf(null) }
-  val saveDesc = saveUri?.let { LocalContext.current.contentResolver.openFileDescriptor(it, "w") }
+  val saveStream = saveUri?.let { LocalContext.current.contentResolver.openOutputStream(it) }
   val savePicker = rememberLauncherForActivityResult(
     contract = ActivityResultContracts.CreateDocument(
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     ),
     onResult = { if (it != null) saveUri = it }
   )
-  val askToSave = { savePicker.launch(null) }
+  val baseDir = Environment.DIRECTORY_DOCUMENTS
+  val askToSave = { savePicker.launch(baseDir ?: "") }
   var saveProgress by rememberSaveable { mutableStateOf(0f) }
-  LaunchedEffect(saveDesc) {
-    saveDesc?.use {
+  LaunchedEffect(saveStream) {
+    saveStream?.let {
       saveProgress = 0f
       saveJob(it, collectResults()) { progress -> saveProgress = progress }
     }
