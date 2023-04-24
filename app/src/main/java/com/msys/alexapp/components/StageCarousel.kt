@@ -2,6 +2,8 @@ package com.msys.alexapp.components
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -48,6 +50,7 @@ fun StageService.Carousel(finishStage: () -> Unit) {
     ?: FinishStage(finishStage)
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun StageService.PerformanceDashboard(
   performance: Performance,
@@ -80,7 +83,7 @@ fun StageService.PerformanceDashboard(
         }
     }
   ) {
-    Row {
+    FlowRow {
       val list = mutableListOf<Double>()
       var allRated = true
       for (juryID in juryIDs) {
