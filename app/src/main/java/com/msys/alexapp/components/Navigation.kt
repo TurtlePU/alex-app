@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import com.msys.alexapp.tasks.Task
 import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.JuryReport
 import com.msys.alexapp.data.Role
@@ -24,7 +25,10 @@ interface AlexAppService : AuthorizationService, AdminService {
 }
 
 @Composable
-fun AlexAppService.NavComposable() {
+fun AlexAppService.NavComposable(
+  loadParticipants: @Composable () -> Task,
+  saveResults: @Composable () -> Task,
+) {
   val navController = rememberNavController()
   NavHost(navController = navController, startDestination = "authorization") {
     composable("authorization") {
@@ -32,7 +36,7 @@ fun AlexAppService.NavComposable() {
         navController.navigate(role.toString())
       }
     }
-    composable(ADMIN.toString()) { Admin() }
+    composable(ADMIN.toString()) { Admin(loadParticipants, saveResults) }
     navigation(route = STAGE.toString(), startDestination = "stage/invitations") {
       composable("stage/invitations") {
         Invitations(invitationsFrom(ADMIN)) { id ->
@@ -80,11 +84,9 @@ fun DefaultPreview() {
       override suspend fun signIn(email: String, password: String) {}
       override val contactsFlow: Flow<Map<String, String>> get() = flowOf()
       override suspend fun setCanComment(canComment: Boolean) {}
-      override suspend fun addPerformance(performance: Performance) {}
       override suspend fun addContact(email: String, nickname: String) {}
       override suspend fun deleteContact(email: String) {}
       override suspend fun setStage(email: String) {}
-      override suspend fun collectResults(): Map<String, StageReport?> = mapOf()
       override fun invitationsFrom(role: Role) = flowOf(listOf("wow"))
       override fun juryService(stageID: String) = object : JuryService {
         override val currentPerformance: Flow<Performance> get() = flowOf()
@@ -122,6 +124,9 @@ fun DefaultPreview() {
         ) {
         }
       }
-    }.NavComposable()
+    }.NavComposable(
+      loadParticipants = { Task(flowOf()) { } },
+      saveResults = { Task(flowOf()) { } },
+    )
   }
 }

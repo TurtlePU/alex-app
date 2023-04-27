@@ -30,10 +30,6 @@ object FirebaseService : AlexAppService {
     admin.child("canComment").setValue(canComment).await()
   }
 
-  override suspend fun addPerformance(performance: Performance) {
-    admin.child("performances/${performance.id}").setValue(performance.toMap()).await()
-  }
-
   override suspend fun addContact(email: String, nickname: String) {
     admin.child("contacts/${email.replace('.', ',')}").setValue(nickname).await()
   }
@@ -47,12 +43,6 @@ object FirebaseService : AlexAppService {
     admin.chooseFriends(Role.ADMIN, mapOf(email.replace('.', ',') to email.replace('.', ',')))
   }
 
-  override suspend fun collectResults(): Map<String, StageReport?> {
-    val stage = invitationsFrom(Role.STAGE).first().firstOrNull() ?: return mapOf()
-    val snap = data.child("$stage/report").get().await()
-    return snap.children.associate { it.key!! to it.asStageReportOrNull }
-  }
-
   override fun invitationsFrom(role: Role): Flow<List<String>> {
     val invitationKey = currentEmail.replace('.', ',')
     return FirebaseDatabase.getInstance()
@@ -64,4 +54,14 @@ object FirebaseService : AlexAppService {
   override fun juryService(stageID: String) = FirebaseJuryService(stageID)
   override fun stagePreparationService(adminID: String) = FirebaseStagePreparationService(adminID)
   override fun stageService(adminID: String) = FirebaseStageService(adminID)
+
+  suspend fun addPerformance(performance: Performance) {
+    admin.child("performances/${performance.id}").setValue(performance.toMap()).await()
+  }
+
+  suspend fun collectResults(): Map<String, StageReport?> {
+    val stage = invitationsFrom(Role.STAGE).first().firstOrNull() ?: return mapOf()
+    val snap = data.child("$stage/report").get().await()
+    return snap.children.associate { it.key!! to it.asStageReportOrNull }
+  }
 }
