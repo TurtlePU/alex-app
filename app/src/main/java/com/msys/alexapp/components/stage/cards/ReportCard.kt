@@ -1,28 +1,29 @@
 package com.msys.alexapp.components.stage.cards
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CopyAll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.msys.alexapp.R
 import com.msys.alexapp.components.common.example
 import com.msys.alexapp.data.Performance
@@ -33,34 +34,41 @@ fun Pair<Performance, StageReport>.Card(
   isExpanded: (String) -> Boolean,
   onClick: (String) -> Unit,
 ) {
-  Column {
-    first.Card(modifier = Modifier.clickable { onClick(first.id) })
-    val expanded = isExpanded(first.id)
-    val transitionState = remember { MutableTransitionState(expanded) }
-    AnimatedVisibility(visibleState = transitionState) { second.Card() }
+  Column(modifier = Modifier.clickable { onClick(first.id) }) {
+    first.Card(modifier = Modifier.padding(10.dp))
+    AnimatedVisibility(visible = isExpanded(first.id)) { second.Card() }
   }
 }
 
 @Composable
 fun StageReport.Card() {
-  Row(modifier = Modifier.fillMaxWidth()) {
-    Text(text = averageRating.toString())
+  Row(
+    modifier = Modifier.fillMaxWidth(),
+    verticalAlignment = Alignment.CenterVertically,
+  ) {
     val commentText = comments.entries.joinToString(separator = "\n") { it.run { "$key: $value" } }
-    TextField(
-      value = commentText,
-      onValueChange = {},
-      readOnly = true,
-      trailingIcon = {
-        val clipboard = LocalClipboardManager.current
-        IconButton(onClick = { clipboard.setText(AnnotatedString(commentText)) }) {
-          Icon(
-            imageVector = Icons.Filled.CopyAll,
-            contentDescription = stringResource(R.string.copy_comments),
-          )
-        }
-      },
-      singleLine = false,
+    Text(
+      text = commentText,
+      modifier = Modifier
+        .weight(3f)
+        .padding(5.dp),
     )
+    val clipboard = LocalClipboardManager.current
+    IconButton(
+      onClick = { clipboard.setText(AnnotatedString(commentText)) },
+      modifier = Modifier.weight(.5f),
+    ) {
+      Icon(
+        imageVector = Icons.Filled.CopyAll,
+        contentDescription = stringResource(R.string.copy_comments),
+      )
+    }
+    Box(
+      modifier = Modifier.weight(1f),
+      contentAlignment = Alignment.Center,
+    ) {
+      Text(text = averageRating.toString())
+    }
   }
 }
 
@@ -68,10 +76,19 @@ fun StageReport.Card() {
 @Composable
 fun ReportCardPreview() {
   var expand by rememberSaveable { mutableStateOf(false) }
-  (example to StageReport(5.0, exampleComments)).Card(isExpanded = { expand }) { expand = !expand }
+  (example to exampleReport).Card(isExpanded = { expand }) { expand = !expand }
 }
 
-val exampleComments = mapOf(
-  "Android" to "Wow, amazing!",
-  "Safari" to "Mediocre, wouldn't recommend"
+@Preview(showBackground = true)
+@Composable
+fun ReportPreview() {
+  exampleReport.Card()
+}
+
+val exampleReport = StageReport(
+  5.0, mapOf(
+    "Android" to "Wow, amazing!",
+    "Safari" to "Mediocre, wouldn't recommend",
+    "Talky" to "Wow tg do fg jd fg xcv talk talk talk I really liked the way you",
+  )
 )
