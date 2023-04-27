@@ -2,19 +2,37 @@ package com.msys.alexapp.components
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Archive
+import androidx.compose.material.icons.filled.Start
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
-import com.msys.alexapp.components.Tabs.*
-import com.msys.alexapp.components.stage.lists.ReportList
-import com.msys.alexapp.components.stage.lists.StagingList
+import com.msys.alexapp.components.Tabs.RATED
+import com.msys.alexapp.components.Tabs.STAGING
+import com.msys.alexapp.components.Tabs.values
+import com.msys.alexapp.components.stage.cards.Card
+import com.msys.alexapp.components.stage.cards.NewPerformance
+import com.msys.alexapp.components.stage.cards.StagingCard
 import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.StageReport
 import kotlinx.coroutines.flow.Flow
@@ -59,7 +77,6 @@ fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
   val staged by stagedFlow.collectAsStateWithLifecycle(initialValue = listOf())
   val stagedSet = staged.toSet()
   val onStage = remember { mutableStateMapOf<String, Unit>() }
-  val isStaged: (String) -> Boolean = { stagedSet.contains(it) || onStage.containsKey(it) }
   val reports by reportFlow.collectAsStateWithLifecycle(initialValue = mapOf())
   var currentTab by remember { mutableStateOf(STAGING) }
   Scaffold(
@@ -96,25 +113,33 @@ fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
   ) { padding ->
     val modifier = Modifier.padding(padding)
     when (currentTab) {
-      STAGING -> StagingList(
-        performances = performances.filter { !reports.containsKey(it.id) },
-        onClick = { id ->
-          if (isStaged(id)) onStage.remove(id)
-          else onStage[id] = Unit
-        },
-        background = { id ->
-          if (isStaged(id)) MaterialTheme.colorScheme.primary
-          else MaterialTheme.colorScheme.background
-        },
-        newPerformanceInitialID = performances.maxOfOrNull { it.id.toLong() + 1 } ?: 0,
-        newPerformance = { newPerformance(it) },
-        modifier = modifier,
-      )
+      STAGING -> {
+        val items = performances.filter { !reports.containsKey(it.id) }
+        LazyColumn(modifier = modifier) {
+          items(items = items, key = { it.id }) { performance ->
+            performance.StagingCard(
+              isStaged = { stagedSet.contains(it) || onStage.containsKey(it) },
+              addStaged = { onStage[it] = Unit },
+              removeStaged = onStage::remove,
+            )
+          }
+          val initialID = performances.maxOfOrNull { it.id.toLong() + 1 } ?: 0
+          item { NewPerformance(initialID, ::newPerformance) }
+        }
+      }
 
-      RATED -> ReportList(
-        reports = performances.mapNotNull { perf -> reports[perf.id]?.let { perf to it } },
-        modifier = modifier
-      )
+      RATED -> {
+        val items = performances.mapNotNull { perf -> reports[perf.id]?.let { perf to it } }
+        var expandedID: String? by remember { mutableStateOf(null) }
+        LazyColumn(modifier = modifier) {
+          items(items = items, key = { it.first.id }) { pair ->
+            pair.Card(
+              onClick = { expandedID = it },
+              isExpanded = { expandedID == it },
+            )
+          }
+        }
+      }
     }
   }
 }

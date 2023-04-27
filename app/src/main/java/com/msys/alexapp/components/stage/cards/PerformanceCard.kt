@@ -1,4 +1,4 @@
-package com.msys.alexapp.components.stage.lists
+package com.msys.alexapp.components.stage.cards
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
