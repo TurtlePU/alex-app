@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -13,9 +14,9 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,9 +25,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
 import com.msys.alexapp.components.common.Commitment
@@ -93,9 +96,16 @@ fun AdminService.Admin(
         val bg =
           if (email == currentStage) Modifier.background(MaterialTheme.colorScheme.secondary)
           else Modifier
-        Row(modifier = bg) {
-          Row(modifier = Modifier.clickable { scope.launch { setStage(email) } }) {
-            Text(text = email)
+        Row(modifier = bg.fillMaxWidth()) {
+          Row(modifier = Modifier
+            .clickable { scope.launch { setStage(email) } }
+            .fillMaxWidth()
+          ) {
+            Text(
+              text = email,
+              modifier = Modifier.fillMaxWidth(.5f),
+              textAlign = TextAlign.Left,
+            )
             Text(text = nickname)
           }
           Button(onClick = { scope.launch { deleteContact(email) } }) {
@@ -109,9 +119,11 @@ fun AdminService.Admin(
       HiddenForm(commitDescription = stringResource(R.string.add_contact)) {
         var email: String? by rememberSaveable { mutableStateOf(null) }
         var nickname: String? by rememberSaveable { mutableStateOf(null) }
-        TextField(
+        OutlinedTextField(
           value = email ?: "",
           onValueChange = { email = it },
+          modifier = Modifier.fillMaxWidth(.5f),
+          textStyle = TextStyle(textAlign = TextAlign.Center),
           keyboardOptions = KeyboardOptions(
             capitalization = KeyboardCapitalization.None,
             autoCorrect = false,
@@ -119,9 +131,11 @@ fun AdminService.Admin(
             imeAction = ImeAction.Next,
           )
         )
-        TextField(
+        OutlinedTextField(
           value = nickname ?: "",
           onValueChange = { nickname = it },
+          modifier = Modifier.fillMaxWidth(.5f),
+          textStyle = TextStyle(textAlign = TextAlign.Center),
           keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         )
         Commitment(email != null && nickname != null) {
