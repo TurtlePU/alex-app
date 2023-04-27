@@ -112,7 +112,7 @@ fun AuthorizationService.Authorization(become: (Role) -> Unit) {
       }
     }
     Button(onClick = { signInAs(Role.ADMIN) }) {
-      Text(text = "Я админ")
+      Text(text = stringResource(R.string.login_admin))
     }
   }
 }
