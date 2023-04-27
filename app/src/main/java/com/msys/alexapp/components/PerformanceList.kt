@@ -120,6 +120,7 @@ fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
         newPerformance = { newPerformance(it) },
         modifier = modifier,
       )
+
       RATED -> ReportList(
         reports = performances.mapNotNull { perf -> reports[perf.id]?.let { perf to it } },
         modifier = modifier
@@ -212,46 +213,16 @@ fun StageReport.Card(copyText: (AnnotatedString) -> Unit) {
 
 @Composable
 fun NewPerformance(initialID: Long, send: suspend (Performance) -> Unit) {
-  var isDraft by rememberSaveable { mutableStateOf(false) }
-  if (isDraft) {
+  HiddenForm(commitDescription = stringResource(R.string.add_performance)) {
     var id: Long? by rememberSaveable { mutableStateOf(initialID) }
     var name: String? by rememberSaveable { mutableStateOf(null) }
     var performance: String? by rememberSaveable { mutableStateOf(null) }
-    val scope = rememberCoroutineScope()
-    Row {
-      Text(text = "#")
-      TextField(value = id?.toString() ?: "", onValueChange = { id = it.toLongOrNull() })
-      TextField(value = name ?: "", onValueChange = { name = it })
-      TextField(value = performance ?: "", onValueChange = { performance = it })
-      IconButton(
-        onClick = {
-          scope.launch {
-            send(anonymousPerformance(id!!, name!!, performance!!))
-            isDraft = false
-          }
-        },
-        enabled = (id?.let { it >= initialID } ?: false) && name != null && performance != null
-      ) {
-        Icon(
-          imageVector = Icons.Filled.Check,
-          contentDescription = stringResource(R.string.add_performance),
-        )
-      }
-      IconButton(onClick = { isDraft = false }) {
-        Icon(
-          imageVector = Icons.Filled.Cancel,
-          contentDescription = stringResource(R.string.cancel_new_performance),
-        )
-      }
-    }
-  } else {
-    IconButton(
-      onClick = { isDraft = true },
-    ) {
-      Icon(
-        imageVector = Icons.Filled.Add,
-        contentDescription = stringResource(R.string.add_performance),
-      )
+    Text(text = "#")
+    TextField(value = id?.toString() ?: "", onValueChange = { id = it.toLongOrNull() })
+    TextField(value = name ?: "", onValueChange = { name = it })
+    TextField(value = performance ?: "", onValueChange = { performance = it })
+    Commitment((id?.let { it >= initialID } ?: false) && name != null && performance != null) {
+      send(anonymousPerformance(id!!, name!!, performance!!))
     }
   }
 }

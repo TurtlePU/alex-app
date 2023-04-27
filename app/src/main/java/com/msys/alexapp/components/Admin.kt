@@ -7,9 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Cancel
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -91,14 +88,11 @@ fun AdminService.Admin(
     val currentStage by currentStageFlow.collectAsStateWithLifecycle(initialValue = null)
     Column(modifier = Modifier.padding(padding)) {
       for ((email, nickname) in contacts) {
-        Row(
-          modifier =
+        val bg =
           if (email == currentStage) Modifier.background(MaterialTheme.colorScheme.secondary)
           else Modifier
-        ) {
-          Row(
-            modifier = Modifier.clickable { scope.launch { setStage(email) } }
-          ) {
+        Row(modifier = bg) {
+          Row(modifier = Modifier.clickable { scope.launch { setStage(email) } }) {
             Text(text = email)
             Text(text = nickname)
           }
@@ -110,48 +104,26 @@ fun AdminService.Admin(
           }
         }
       }
-      Row {
-        var editing by rememberSaveable { mutableStateOf(false) }
-        if (editing) {
-          var email: String? by rememberSaveable { mutableStateOf(null) }
-          var nickname: String? by rememberSaveable { mutableStateOf(null) }
-          TextField(
-            value = email ?: "",
-            onValueChange = { email = it },
-            keyboardOptions = KeyboardOptions(
-              capitalization = KeyboardCapitalization.None,
-              autoCorrect = false,
-              keyboardType = KeyboardType.Email,
-              imeAction = ImeAction.Next,
-            )
+      HiddenForm(commitDescription = stringResource(R.string.add_contact)) {
+        var email: String? by rememberSaveable { mutableStateOf(null) }
+        var nickname: String? by rememberSaveable { mutableStateOf(null) }
+        TextField(
+          value = email ?: "",
+          onValueChange = { email = it },
+          keyboardOptions = KeyboardOptions(
+            capitalization = KeyboardCapitalization.None,
+            autoCorrect = false,
+            keyboardType = KeyboardType.Email,
+            imeAction = ImeAction.Next,
           )
-          TextField(
-            value = nickname ?: "",
-            onValueChange = { nickname = it },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-          )
-          Button(
-            onClick = { scope.launch { addContact(email!!, nickname!!); editing = false } },
-            enabled = email != null && nickname != null
-          ) {
-            Icon(
-              imageVector = Icons.Filled.Check,
-              contentDescription = stringResource(R.string.add_contact),
-            )
-          }
-          Button(onClick = { editing = false }) {
-            Icon(
-              imageVector = Icons.Filled.Cancel,
-              contentDescription = stringResource(R.string.cancel),
-            )
-          }
-        } else {
-          Button(onClick = { editing = true }) {
-            Icon(
-              imageVector = Icons.Filled.Add,
-              contentDescription = stringResource(R.string.add_contact),
-            )
-          }
+        )
+        TextField(
+          value = nickname ?: "",
+          onValueChange = { nickname = it },
+          keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        )
+        Commitment(email != null && nickname != null) {
+          addContact(email!!, nickname!!)
         }
       }
     }
