@@ -50,7 +50,8 @@ fun Pair<Performance, StageReport>.Card(
 ) {
   Column {
     first.Card(modifier = Modifier.clickable { onClick(first.id) })
-    val transitionState = remember { MutableTransitionState(isExpanded(first.id)) }
+    val expanded = isExpanded(first.id)
+    val transitionState = remember { MutableTransitionState(expanded) }
     AnimatedVisibility(visibleState = transitionState) { second.Card(copyText) }
   }
 }
