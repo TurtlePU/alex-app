@@ -16,6 +16,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import com.msys.alexapp.R
 import com.msys.alexapp.components.common.Commitment
 import com.msys.alexapp.components.common.HiddenForm
@@ -50,4 +51,10 @@ fun NewContact(addContact: suspend (String, String) -> Unit) {
       addContact(email!!, nickname!!)
     }
   }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun NewContactPreview() {
+  NewContact { _, _ -> }
 }

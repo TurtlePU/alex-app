@@ -134,9 +134,8 @@ fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
         LazyColumn(modifier = modifier) {
           items(items = items, key = { it.first.id }) { pair ->
             pair.Card(
-              onClick = { expandedID = it },
               isExpanded = { expandedID == it },
-            )
+            ) { expandedID = it }
           }
         }
       }

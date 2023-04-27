@@ -13,6 +13,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import com.msys.alexapp.R
 import com.msys.alexapp.components.common.Commitment
 import com.msys.alexapp.components.common.HiddenForm
@@ -63,3 +64,9 @@ fun anonymousPerformance(id: Long, name: String, performance: String) = Performa
   performance = performance,
   null, null, null, null
 )
+
+@Preview(showBackground = true)
+@Composable
+fun NewPerformancePreview() {
+  NewPerformance(initialID = 0) { }
+}
