@@ -1,5 +1,6 @@
 package com.msys.alexapp.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,6 +15,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -36,6 +38,7 @@ import kotlinx.coroutines.launch
 
 interface AdminService {
   val contactsFlow: Flow<Map<String, String>>
+  val currentStageFlow: Flow<String>
   suspend fun setCanComment(canComment: Boolean)
   suspend fun addContact(email: String, nickname: String)
   suspend fun deleteContact(email: String)
@@ -85,9 +88,14 @@ fun AdminService.Admin(
     }
   ) { padding ->
     val contacts by contactsFlow.collectAsStateWithLifecycle(initialValue = mapOf())
+    val currentStage by currentStageFlow.collectAsStateWithLifecycle(initialValue = null)
     Column(modifier = Modifier.padding(padding)) {
       for ((email, nickname) in contacts) {
-        Row {
+        Row(
+          modifier =
+          if (email == currentStage) Modifier.background(MaterialTheme.colorScheme.secondary)
+          else Modifier
+        ) {
           Row(
             modifier = Modifier.clickable { scope.launch { setStage(email) } }
           ) {

@@ -12,6 +12,7 @@ import com.msys.alexapp.data.StageReport.Companion.asStageReportOrNull
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.tasks.await
 
 object FirebaseService : AlexAppService {
@@ -24,7 +25,10 @@ object FirebaseService : AlexAppService {
   override val contactsFlow: Flow<Map<String, String>>
     get() = admin.child("contacts").snapshots
       .map { it.getValue<Map<String, String>>() ?: mapOf() }
-      .map { it.mapKeys { it.key.replace(',', '.') } }
+      .map { it.mapKeys { contact -> contact.key.replace(',', '.') } }
+  override val currentStageFlow: Flow<String>
+    get() = admin.child("friends").snapshots
+      .mapNotNull { it.children.firstOrNull()?.key?.replace(',', '.') }
 
   override suspend fun setCanComment(canComment: Boolean) {
     admin.child("canComment").setValue(canComment).await()

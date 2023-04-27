@@ -83,6 +83,7 @@ fun DefaultPreview() {
     object : AlexAppService {
       override suspend fun signIn(email: String, password: String) {}
       override val contactsFlow: Flow<Map<String, String>> get() = flowOf()
+      override val currentStageFlow: Flow<String> get() = flowOf()
       override suspend fun setCanComment(canComment: Boolean) {}
       override suspend fun addContact(email: String, nickname: String) {}
       override suspend fun deleteContact(email: String) {}
