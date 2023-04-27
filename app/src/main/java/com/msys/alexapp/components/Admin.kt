@@ -1,20 +1,13 @@
 package com.msys.alexapp.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,15 +18,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
-import com.msys.alexapp.components.common.Commitment
-import com.msys.alexapp.components.common.HiddenForm
+import com.msys.alexapp.components.admin.ContactCard
+import com.msys.alexapp.components.admin.NewContact
 import com.msys.alexapp.tasks.Task
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -48,17 +36,6 @@ interface AdminService {
 }
 
 @Composable
-fun TaskButton(options: Task, text: String) {
-  val progress by options.progressFlow.collectAsStateWithLifecycle(initialValue = 0f)
-  Button(onClick = options.start) {
-    Column {
-      Text(text = text)
-      LinearProgressIndicator(progress = progress.coerceIn(0f, 1f))
-    }
-  }
-}
-
-@Composable
 fun AdminService.Admin(
   loadParticipants: @Composable () -> Task,
   saveResults: @Composable () -> Task,
@@ -66,22 +43,15 @@ fun AdminService.Admin(
   val scope = rememberCoroutineScope()
   Scaffold(
     bottomBar = {
-      Row {
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+      ) {
         TaskButton(
           options = loadParticipants(),
           text = stringResource(R.string.load_participants)
         )
-        Row {
-          var canComment by rememberSaveable { mutableStateOf(false) }
-          Checkbox(
-            checked = canComment,
-            onCheckedChange = {
-              canComment = !canComment
-              scope.launch { setCanComment(canComment) }
-            },
-          )
-          Text(text = stringResource(R.string.comments))
-        }
+        CommentBox { scope.launch { setCanComment(it) } }
         TaskButton(
           options = saveResults(),
           text = stringResource(R.string.save_results),
@@ -92,56 +62,40 @@ fun AdminService.Admin(
     val contacts by contactsFlow.collectAsStateWithLifecycle(initialValue = mapOf())
     val currentStage by currentStageFlow.collectAsStateWithLifecycle(initialValue = null)
     Column(modifier = Modifier.padding(padding)) {
-      for ((email, nickname) in contacts) {
-        val bg =
-          if (email == currentStage) Modifier.background(MaterialTheme.colorScheme.secondary)
-          else Modifier
-        Row(modifier = bg.fillMaxWidth()) {
-          Row(modifier = Modifier
-            .clickable { scope.launch { setStage(email) } }
-            .fillMaxWidth()
-          ) {
-            Text(
-              text = email,
-              modifier = Modifier.fillMaxWidth(.5f),
-              textAlign = TextAlign.Left,
-            )
-            Text(text = nickname)
-          }
-          Button(onClick = { scope.launch { deleteContact(email) } }) {
-            Icon(
-              imageVector = Icons.Filled.Delete,
-              contentDescription = stringResource(R.string.delete_contact),
-            )
-          }
-        }
-      }
-      HiddenForm(commitDescription = stringResource(R.string.add_contact)) {
-        var email: String? by rememberSaveable { mutableStateOf(null) }
-        var nickname: String? by rememberSaveable { mutableStateOf(null) }
-        OutlinedTextField(
-          value = email ?: "",
-          onValueChange = { email = it },
-          modifier = Modifier.fillMaxWidth(.5f),
-          textStyle = TextStyle(textAlign = TextAlign.Center),
-          keyboardOptions = KeyboardOptions(
-            capitalization = KeyboardCapitalization.None,
-            autoCorrect = false,
-            keyboardType = KeyboardType.Email,
-            imeAction = ImeAction.Next,
-          )
+      for (entry in contacts) {
+        entry.ContactCard(
+          isStage = { currentStage == it },
+          setStage = { scope.launch { setStage(it) } },
+          deleteContact = { scope.launch { deleteContact(it) } },
         )
-        OutlinedTextField(
-          value = nickname ?: "",
-          onValueChange = { nickname = it },
-          modifier = Modifier.fillMaxWidth(.5f),
-          textStyle = TextStyle(textAlign = TextAlign.Center),
-          keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-        )
-        Commitment(email != null && nickname != null) {
-          addContact(email!!, nickname!!)
-        }
       }
+      NewContact(::addContact)
+    }
+  }
+}
+
+@Composable
+fun CommentBox(setCanComment: (Boolean) -> Unit) {
+  Row {
+    var canComment by rememberSaveable { mutableStateOf(false) }
+    Checkbox(
+      checked = canComment,
+      onCheckedChange = {
+        canComment = !canComment
+        setCanComment(canComment)
+      },
+    )
+    Text(text = stringResource(R.string.comments))
+  }
+}
+
+@Composable
+fun TaskButton(options: Task, text: String) {
+  val progress by options.progressFlow.collectAsStateWithLifecycle(initialValue = 0f)
+  Button(onClick = options.start) {
+    Column {
+      Text(text = text)
+      LinearProgressIndicator(progress = progress.coerceIn(0f, 1f))
     }
   }
 }

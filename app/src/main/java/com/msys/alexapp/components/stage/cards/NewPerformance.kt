@@ -1,5 +1,6 @@
 package com.msys.alexapp.components.stage.cards
 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -23,31 +24,33 @@ fun NewPerformance(initialID: Long, send: suspend (Performance) -> Unit) {
     var id: Long? by rememberSaveable { mutableStateOf(initialID) }
     var name: String? by rememberSaveable { mutableStateOf(null) }
     var performance: String? by rememberSaveable { mutableStateOf(null) }
-    Text(text = "#")
-    TextField(
-      value = id?.toString() ?: "",
-      onValueChange = { id = it.toLongOrNull() },
-      keyboardOptions = KeyboardOptions(
-        keyboardType = KeyboardType.Number,
-        imeAction = ImeAction.Next,
-      ),
-    )
-    TextField(
-      value = name ?: "",
-      onValueChange = { name = it },
-      keyboardOptions = KeyboardOptions(
-        capitalization = KeyboardCapitalization.Words,
-        imeAction = ImeAction.Next,
-      ),
-    )
-    TextField(
-      value = performance ?: "",
-      onValueChange = { performance = it },
-      keyboardOptions = KeyboardOptions(
-        capitalization = KeyboardCapitalization.Sentences,
-        imeAction = ImeAction.Done,
-      ),
-    )
+    Row {
+      Text(text = "#")
+      TextField(
+        value = id?.toString() ?: "",
+        onValueChange = { id = it.toLongOrNull() },
+        keyboardOptions = KeyboardOptions(
+          keyboardType = KeyboardType.Number,
+          imeAction = ImeAction.Next,
+        ),
+      )
+      TextField(
+        value = name ?: "",
+        onValueChange = { name = it },
+        keyboardOptions = KeyboardOptions(
+          capitalization = KeyboardCapitalization.Words,
+          imeAction = ImeAction.Next,
+        ),
+      )
+      TextField(
+        value = performance ?: "",
+        onValueChange = { performance = it },
+        keyboardOptions = KeyboardOptions(
+          capitalization = KeyboardCapitalization.Sentences,
+          imeAction = ImeAction.Done,
+        ),
+      )
+    }
     Commitment((id?.let { it >= initialID } ?: false) && name != null && performance != null) {
       send(anonymousPerformance(id!!, name!!, performance!!))
     }

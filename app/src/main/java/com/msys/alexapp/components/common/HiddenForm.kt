@@ -34,8 +34,7 @@ fun HiddenForm(
   ) {
     var draft by rememberSaveable { mutableStateOf(false) }
     if (draft) {
-      var commitment = Commitment(false) { }
-      Row { commitment = content() }
+      val commitment = content()
       Row {
         val scope = rememberCoroutineScope()
         Button(
