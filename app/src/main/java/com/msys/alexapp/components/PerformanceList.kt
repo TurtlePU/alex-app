@@ -1,30 +1,20 @@
 package com.msys.alexapp.components
 
 import androidx.annotation.StringRes
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
 import com.msys.alexapp.components.Tabs.*
+import com.msys.alexapp.components.stage.lists.ReportList
+import com.msys.alexapp.components.stage.lists.StagingList
 import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.StageReport
 import kotlinx.coroutines.flow.Flow
@@ -128,108 +118,3 @@ fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
     }
   }
 }
-
-@Composable
-fun StagingList(
-  performances: List<Performance>,
-  onClick: (String) -> Unit,
-  background: @Composable (String) -> Color,
-  newPerformanceInitialID: Long,
-  newPerformance: suspend (Performance) -> Unit,
-  modifier: Modifier = Modifier,
-) {
-  LazyColumn(modifier = modifier) {
-    items(items = performances, key = { it.id }) {
-      it.Card(modifier = Modifier
-        .clickable { onClick(it.id) }
-        .background(background(it.id)))
-    }
-    item { NewPerformance(newPerformanceInitialID, newPerformance) }
-  }
-}
-
-@Composable
-fun ReportList(reports: List<Pair<Performance, StageReport>>, modifier: Modifier = Modifier) {
-  var expandedID: String? by remember { mutableStateOf(null) }
-  val manager = LocalClipboardManager.current
-  LazyColumn(modifier = modifier) {
-    items(items = reports, key = { it.first.id }) { pair ->
-      pair.Card(
-        onClick = { expandedID = it },
-        isExpanded = { expandedID == it },
-        copyText = manager::setText,
-      )
-    }
-  }
-}
-
-@Composable
-fun Pair<Performance, StageReport>.Card(
-  onClick: (String) -> Unit,
-  isExpanded: (String) -> Boolean,
-  copyText: (AnnotatedString) -> Unit,
-) {
-  Column {
-    first.Card(modifier = Modifier.clickable { onClick(first.id) })
-    val transitionState = remember { MutableTransitionState(isExpanded(first.id)) }
-    AnimatedVisibility(visibleState = transitionState) { second.Card(copyText) }
-  }
-}
-
-@Composable
-fun Performance.Card(modifier: Modifier = Modifier) {
-  Row(
-    modifier = Modifier
-      .fillMaxWidth()
-      .then(modifier)
-  ) {
-    Text(text = id)
-    Text(text = name)
-    Text(text = performance)
-  }
-}
-
-@Composable
-fun StageReport.Card(copyText: (AnnotatedString) -> Unit) {
-  Row(modifier = Modifier.fillMaxWidth()) {
-    Text(text = averageRating.toString())
-    val commentText = comments.entries.joinToString(separator = "\n") { it.run { "$key: $value" } }
-    TextField(
-      value = commentText,
-      onValueChange = {},
-      readOnly = true,
-      trailingIcon = {
-        IconButton(onClick = { copyText(AnnotatedString(commentText)) }) {
-          Icon(
-            imageVector = Icons.Filled.CopyAll,
-            contentDescription = stringResource(R.string.copy_comments),
-          )
-        }
-      },
-      singleLine = false,
-    )
-  }
-}
-
-@Composable
-fun NewPerformance(initialID: Long, send: suspend (Performance) -> Unit) {
-  HiddenForm(commitDescription = stringResource(R.string.add_performance)) {
-    var id: Long? by rememberSaveable { mutableStateOf(initialID) }
-    var name: String? by rememberSaveable { mutableStateOf(null) }
-    var performance: String? by rememberSaveable { mutableStateOf(null) }
-    Text(text = "#")
-    TextField(value = id?.toString() ?: "", onValueChange = { id = it.toLongOrNull() })
-    TextField(value = name ?: "", onValueChange = { name = it })
-    TextField(value = performance ?: "", onValueChange = { performance = it })
-    Commitment((id?.let { it >= initialID } ?: false) && name != null && performance != null) {
-      send(anonymousPerformance(id!!, name!!, performance!!))
-    }
-  }
-}
-
-fun anonymousPerformance(id: Long, name: String, performance: String) = Performance(
-  id = id.toString(),
-  name = name,
-  performance = performance,
-  null, null, null, null
-)

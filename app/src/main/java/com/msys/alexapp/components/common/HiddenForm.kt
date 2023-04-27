@@ -1,4 +1,4 @@
-package com.msys.alexapp.components
+package com.msys.alexapp.components.common
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row

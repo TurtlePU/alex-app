@@ -1,4 +1,4 @@
-package com.msys.alexapp.components
+package com.msys.alexapp.components.common
 
 import android.icu.util.Calendar
 import androidx.compose.animation.core.FastOutLinearInEasing
