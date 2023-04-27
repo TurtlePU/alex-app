@@ -5,9 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +22,7 @@ import com.msys.alexapp.components.admin.Card
 import com.msys.alexapp.components.admin.Contact
 import com.msys.alexapp.components.admin.NewContact
 import com.msys.alexapp.tasks.Task
+import com.msys.alexapp.tasks.TaskButton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
@@ -87,16 +86,5 @@ fun CommentBox(setCanComment: (Boolean) -> Unit) {
       },
     )
     Text(text = stringResource(R.string.comments))
-  }
-}
-
-@Composable
-fun TaskButton(options: Task, text: String) {
-  val progress by options.progressFlow.collectAsStateWithLifecycle(initialValue = 0f)
-  Button(onClick = options.start) {
-    Column {
-      Text(text = text)
-      LinearProgressIndicator(progress = progress.coerceIn(0f, 1f))
-    }
   }
 }
