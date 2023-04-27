@@ -35,7 +35,7 @@ fun Pair<Performance, StageReport>.Card(
   onClick: (String) -> Unit,
 ) {
   Column(modifier = Modifier.clickable { onClick(first.id) }) {
-    first.Card(modifier = Modifier.padding(10.dp))
+    first.Card()
     AnimatedVisibility(visible = isExpanded(first.id)) { second.Card() }
   }
 }
