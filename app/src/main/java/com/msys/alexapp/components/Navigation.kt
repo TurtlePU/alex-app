@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import com.msys.alexapp.components.admin.Contact
 import com.msys.alexapp.components.common.currentDate
 import com.msys.alexapp.tasks.Task
 import com.msys.alexapp.data.Performance
@@ -83,7 +84,7 @@ fun DefaultPreview() {
   AlexAppTheme {
     object : AlexAppService {
       override suspend fun signIn(email: String, password: String) {}
-      override val contactsFlow: Flow<Map<String, String>> get() = flowOf()
+      override val contactsFlow: Flow<List<Contact>> get() = flowOf()
       override val currentStageFlow: Flow<String> get() = flowOf()
       override suspend fun setCanComment(canComment: Boolean) {}
       override suspend fun addContact(email: String, nickname: String) {}

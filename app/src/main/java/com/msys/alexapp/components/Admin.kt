@@ -20,14 +20,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
-import com.msys.alexapp.components.admin.ContactCard
+import com.msys.alexapp.components.admin.Card
+import com.msys.alexapp.components.admin.Contact
 import com.msys.alexapp.components.admin.NewContact
 import com.msys.alexapp.tasks.Task
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 interface AdminService {
-  val contactsFlow: Flow<Map<String, String>>
+  val contactsFlow: Flow<List<Contact>>
   val currentStageFlow: Flow<String>
   suspend fun setCanComment(canComment: Boolean)
   suspend fun addContact(email: String, nickname: String)
@@ -59,11 +60,11 @@ fun AdminService.Admin(
       }
     }
   ) { padding ->
-    val contacts by contactsFlow.collectAsStateWithLifecycle(initialValue = mapOf())
+    val contacts by contactsFlow.collectAsStateWithLifecycle(initialValue = listOf())
     val currentStage by currentStageFlow.collectAsStateWithLifecycle(initialValue = null)
     Column(modifier = Modifier.padding(padding)) {
-      for (entry in contacts) {
-        entry.ContactCard(
+      for (contact in contacts) {
+        contact.Card(
           isStage = { currentStage == it },
           setStage = { scope.launch { setStage(it) } },
           deleteContact = { scope.launch { deleteContact(it) } },

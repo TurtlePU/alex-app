@@ -5,6 +5,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.database.ktx.snapshots
 import com.msys.alexapp.components.AlexAppService
+import com.msys.alexapp.components.admin.Contact
 import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.Role
 import com.msys.alexapp.data.StageReport
@@ -22,10 +23,10 @@ object FirebaseService : AlexAppService {
     FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password).await()
   }
 
-  override val contactsFlow: Flow<Map<String, String>>
+  override val contactsFlow: Flow<List<Contact>>
     get() = admin.child("contacts").snapshots
       .map { it.getValue<Map<String, String>>() ?: mapOf() }
-      .map { it.mapKeys { contact -> contact.key.replace(',', '.') } }
+      .map { it.map { contact -> contact.run { Contact(key.replace(',', '.'), value) } } }
   override val currentStageFlow: Flow<String>
     get() = admin.child("friends").snapshots
       .mapNotNull { it.children.firstOrNull()?.key?.replace(',', '.') }
