@@ -5,25 +5,29 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
 import com.msys.alexapp.components.admin.Card
+import com.msys.alexapp.components.admin.CommentBox
 import com.msys.alexapp.components.admin.Contact
 import com.msys.alexapp.components.admin.NewContact
 import com.msys.alexapp.tasks.Task
 import com.msys.alexapp.tasks.TaskButton
+import com.msys.alexapp.tasks.dummyTask
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 interface AdminService {
@@ -33,6 +37,29 @@ interface AdminService {
   suspend fun addContact(email: String, nickname: String)
   suspend fun deleteContact(email: String)
   suspend fun setStage(email: String)
+
+  interface Dummy : AdminService {
+    val contacts: SnapshotStateMap<String, String>
+    override val contactsFlow: Flow<List<Contact>>
+      get() = snapshotFlow { contacts }
+        .map { it.map { (email, nickname) -> Contact(email, nickname) } }
+
+    override val currentStageFlow: MutableStateFlow<String>
+
+    override suspend fun setCanComment(canComment: Boolean) {}
+
+    override suspend fun addContact(email: String, nickname: String) {
+      contacts[email] = nickname
+    }
+
+    override suspend fun deleteContact(email: String) {
+      contacts.remove(email)
+    }
+
+    override suspend fun setStage(email: String) {
+      currentStageFlow.value = email
+    }
+  }
 }
 
 @Composable
@@ -74,17 +101,14 @@ fun AdminService.Admin(
   }
 }
 
+@Preview(showBackground = true)
 @Composable
-fun CommentBox(setCanComment: (Boolean) -> Unit) {
-  Row {
-    var canComment by rememberSaveable { mutableStateOf(false) }
-    Checkbox(
-      checked = canComment,
-      onCheckedChange = {
-        canComment = !canComment
-        setCanComment(canComment)
-      },
-    )
-    Text(text = stringResource(R.string.comments))
-  }
+fun AdminPreview() {
+  object : AdminService.Dummy {
+    override val contacts: SnapshotStateMap<String, String> = remember { mutableStateMapOf() }
+    override val currentStageFlow: MutableStateFlow<String> = MutableStateFlow("")
+  }.Admin(
+    loadParticipants = { dummyTask() },
+    saveResults = { dummyTask() },
+  )
 }
