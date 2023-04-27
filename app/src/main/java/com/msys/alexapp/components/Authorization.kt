@@ -20,6 +20,10 @@ import kotlinx.coroutines.launch
 
 interface AuthorizationService {
   suspend fun signIn(email: String, password: String)
+
+  interface Dummy : AuthorizationService {
+    override suspend fun signIn(email: String, password: String) {}
+  }
 }
 
 @Composable
@@ -117,8 +121,6 @@ fun AuthorizationService.Authorization(become: (Role) -> Unit) {
 @Composable
 fun AuthorizationPreview() {
   AlexAppTheme {
-    object : AuthorizationService {
-      override suspend fun signIn(email: String, password: String) {}
-    }.Authorization {}
+    object : AuthorizationService.Dummy {}.Authorization {}
   }
 }
