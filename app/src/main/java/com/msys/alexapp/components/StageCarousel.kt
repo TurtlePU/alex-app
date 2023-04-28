@@ -33,7 +33,6 @@ data class JuryNote(
 )
 
 interface StageService {
-  val deadlineFlow: Flow<Date>
   val canCommentFlow: Flow<Boolean>
   val firstStagedPerformance: Flow<Pair<String, Performance>?>
   val nextStagedPerformance: Flow<String?>
@@ -42,6 +41,7 @@ interface StageService {
   suspend fun dropStaged(key: String)
   suspend fun setCanComment(canComment: Boolean)
   suspend fun setCurrent(performance: Performance, deadline: Date)
+  suspend fun fetchDeadline(): Date
   suspend fun sendAverageRating(performanceID: String, averageRating: Double)
   suspend fun publishComment(performanceID: String, juryNickname: String, comment: String)
 }
@@ -69,9 +69,8 @@ fun StageService.PerformanceDashboard(
   var averageRating by rememberSaveable { mutableStateOf(Double.NaN) }
   LaunchedEffect(averageRating) { sendAverageRating(performance.id, averageRating) }
   val scope = rememberCoroutineScope()
-  val deadline by deadlineFlow.collectAsStateWithLifecycle(initialValue = currentDate())
   performance.View(
-    progress = progressFlow(deadline),
+    progress = progressFlow(::fetchDeadline),
     cornerButton = {
       Button(onClick = { scope.launch { dropStaged() } }) {
         Icon(

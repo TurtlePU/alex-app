@@ -32,9 +32,10 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
-fun progressFlow(deadline: Date): Flow<Float> {
+fun progressFlow(fetchDeadline: suspend () -> Date): Flow<Float> {
   val progress = MutableStateFlow(0f)
   LaunchedEffect(true) {
+    val deadline = fetchDeadline()
     val timeout = deadline - currentDate()
     while (true) {
       val time = currentDate()

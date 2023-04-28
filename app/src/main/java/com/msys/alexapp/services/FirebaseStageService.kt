@@ -13,8 +13,6 @@ import kotlinx.coroutines.tasks.await
 import java.util.*
 
 class FirebaseStageService(adminID: String) : FirebaseStageServiceBase(adminID), StageService {
-  override val deadlineFlow: Flow<Date>
-    get() = stage.child("advice/deadline").snapshots.map { Date(it.getValue<Long>() ?: 0) }
   override val canCommentFlow: Flow<Boolean>
     get() = admin.child("canComment").snapshots.map {
       it.exists() && it.getValue<Boolean>() == true
@@ -58,6 +56,9 @@ class FirebaseStageService(adminID: String) : FirebaseStageServiceBase(adminID),
     stage.child("advice/deadline").setValue(deadline.time).await()
     task.await()
   }
+
+  override suspend fun fetchDeadline() =
+    Date(stage.child("advice/deadline").get().await().getValue<Long>() ?: 0)
 
   override suspend fun sendAverageRating(performanceID: String, averageRating: Double) {
     if (!averageRating.isNaN()) {

@@ -102,7 +102,7 @@ fun Advice.PerformancePage(
   var comment: String? by rememberSaveable { mutableStateOf(null) }
   val scope = rememberCoroutineScope()
   performance.View(
-    progress = progressFlow(deadline),
+    progress = progressFlow { deadline },
     floatingActionButton = {
       if (rating != null) {
         FloatingActionButton(
