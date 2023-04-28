@@ -3,7 +3,6 @@ package com.msys.alexapp.components.common
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Cancel
@@ -16,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.msys.alexapp.R
@@ -25,14 +25,18 @@ data class Commitment(val canCommit: Boolean, val onCommit: suspend () -> Unit)
 
 @Composable
 fun HiddenForm(
+  modifier: Modifier = Modifier,
+  contentArrangement: Arrangement.Horizontal = Arrangement.Start,
   commitDescription: String? = null,
   content: @Composable RowScope.() -> Commitment,
 ) {
+  var draft by rememberSaveable { mutableStateOf(false) }
+  val arrangement = if (draft) contentArrangement else Arrangement.Center
   Row(
-    modifier = Modifier.fillMaxWidth(),
-    horizontalArrangement = Arrangement.SpaceBetween,
+    modifier = modifier,
+    horizontalArrangement = arrangement,
+    verticalAlignment = Alignment.CenterVertically,
   ) {
-    var draft by rememberSaveable { mutableStateOf(false) }
     if (draft) {
       val commitment = content()
       Row {
@@ -54,10 +58,7 @@ fun HiddenForm(
         }
       }
     } else {
-      Button(
-        onClick = { draft = true },
-        modifier = Modifier.fillMaxWidth(),
-      ) {
+      Button(onClick = { draft = true }) {
         Icon(
           imageVector = Icons.Filled.Add,
           contentDescription = commitDescription,

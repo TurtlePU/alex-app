@@ -20,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.msys.alexapp.R
+import com.msys.alexapp.ui.theme.AlexAppTheme
 
 data class Contact(val email: String, val nickname: String)
 
@@ -50,11 +51,13 @@ fun Contact.Card(
   }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, device = "spec:width=1280dp,height=800dp,dpi=480")
 @Composable
 fun ContactCardPreview() {
-  var isStage by rememberSaveable { mutableStateOf(false) }
-  Contact("android@example.com", "Android").Card(
-    isStage = { isStage }, setStage = { isStage = !isStage },
-  ) { }
+  AlexAppTheme {
+    var isStage by rememberSaveable { mutableStateOf(false) }
+    Contact("android@example.com", "Android").Card(
+      isStage = { isStage }, setStage = { isStage = !isStage },
+    ) { }
+  }
 }

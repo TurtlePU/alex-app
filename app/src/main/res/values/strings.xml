@@ -32,4 +32,6 @@
     <string name="default_jury_nickname">Абырвалг</string>
     <string name="save_results">Сохранить результаты</string>
     <string name="login_admin">Я админ</string>
+    <string name="name_label">Имя</string>
+    <string name="performance_label">Номер</string>
 </resources>
