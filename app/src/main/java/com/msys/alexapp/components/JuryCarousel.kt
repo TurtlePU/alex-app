@@ -34,6 +34,7 @@ import com.msys.alexapp.R
 import com.msys.alexapp.components.common.View
 import com.msys.alexapp.components.common.currentDate
 import com.msys.alexapp.components.common.example
+import com.msys.alexapp.components.common.progressFlow
 import com.msys.alexapp.data.JuryReport
 import com.msys.alexapp.data.Performance
 import com.msys.alexapp.ui.theme.AlexAppTheme
@@ -101,7 +102,7 @@ fun Advice.PerformancePage(
   var comment: String? by rememberSaveable { mutableStateOf(null) }
   val scope = rememberCoroutineScope()
   performance.View(
-    deadline = deadline,
+    progress = progressFlow(deadline),
     floatingActionButton = {
       if (rating != null) {
         FloatingActionButton(

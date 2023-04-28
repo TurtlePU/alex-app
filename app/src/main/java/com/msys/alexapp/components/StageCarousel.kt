@@ -18,7 +18,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
 import com.msys.alexapp.components.common.View
 import com.msys.alexapp.components.common.currentDate
-import com.msys.alexapp.components.common.nextDeadline
+import com.msys.alexapp.components.common.defaultTimeout
+import com.msys.alexapp.components.common.plus
+import com.msys.alexapp.components.common.progressFlow
 import com.msys.alexapp.data.JuryReport
 import com.msys.alexapp.data.Performance
 import kotlinx.coroutines.flow.Flow
@@ -61,14 +63,14 @@ fun StageService.PerformanceDashboard(
   finishStage: () -> Unit,
   dropStaged: suspend () -> Unit,
 ) {
-  val deadline = rememberSaveable { currentDate().nextDeadline.time }
+  val deadline = rememberSaveable { (currentDate() + defaultTimeout).time }
   LaunchedEffect(true) { setCurrent(performance, Date(deadline)) }
   var canFinish by rememberSaveable { mutableStateOf(false) }
   var averageRating by rememberSaveable { mutableStateOf(Double.NaN) }
   LaunchedEffect(averageRating) { sendAverageRating(performance.id, averageRating) }
   val scope = rememberCoroutineScope()
   performance.View(
-    deadline = Date(deadline),
+    progress = progressFlow(Date(deadline)),
     cornerButton = {
       Button(onClick = { scope.launch { dropStaged() } }) {
         Icon(
