@@ -1,14 +1,30 @@
 package com.msys.alexapp.components
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.StarRate
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -18,12 +34,12 @@ import com.msys.alexapp.R
 import com.msys.alexapp.components.common.View
 import com.msys.alexapp.components.common.currentDate
 import com.msys.alexapp.components.common.example
-import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.JuryReport
+import com.msys.alexapp.data.Performance
 import com.msys.alexapp.ui.theme.AlexAppTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
-import java.util.*
+import java.util.Date
 
 data class Advice(
   val deadline: Date,
@@ -99,36 +115,54 @@ fun Advice.PerformancePage(
       }
     }
   ) {
-    RatingPad(rating) { rating = it }
-    if (canComment) {
-      CommentSection(comment ?: "") { comment = it }
+    Column(
+      verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+      RatingPad(rating) { rating = it }
+      if (canComment) {
+        CommentSection(comment ?: "") { comment = it }
+      }
     }
   }
 }
 
 @Composable
-fun RatingPad(rating: Double?, setRating: (Double) -> Unit) {
+fun ColumnScope.RatingPad(rating: Double?, setRating: (Double) -> Unit) {
   Row(
-    modifier = Modifier.fillMaxWidth(),
-    horizontalArrangement = Arrangement.SpaceEvenly,
+    modifier = Modifier
+      .fillMaxWidth()
+      .weight(1f),
+    horizontalArrangement = Arrangement.spacedBy(10.dp),
   ) {
     for (i in 5..9) {
-      RatingButton(i.toDouble(), rating, setRating)
+      RatingButton(
+        i.toDouble(), rating, setRating,
+        Modifier
+          .fillMaxHeight()
+          .weight(1f),
+      )
     }
   }
   Row(
-    modifier = Modifier.fillMaxWidth(),
-    horizontalArrangement = Arrangement.SpaceEvenly,
+    modifier = Modifier
+      .fillMaxWidth()
+      .weight(1f),
+    horizontalArrangement = Arrangement.spacedBy(10.dp),
   ) {
     for (i in 5..9) {
-      RatingButton(i + 0.5, rating, setRating)
+      RatingButton(
+        i + 0.5, rating, setRating,
+        Modifier
+          .fillMaxHeight()
+          .weight(1f),
+      )
     }
   }
   RatingButton(
     10.0, rating, setRating,
     Modifier
       .fillMaxWidth()
-      .padding(5.dp)
+      .weight(1f)
   )
 }
 
@@ -143,26 +177,31 @@ fun RatingButton(
     onClick = { rate(newRating) },
     modifier = modifier,
     enabled = newRating != oldRating,
+    shape = RectangleShape,
   ) {
-    Text(text = newRating.toString())
+    Text(
+      text = newRating.toString(),
+      style = MaterialTheme.typography.displayLarge,
+    )
   }
 }
 
 @Composable
-fun CommentSection(value: String, onValueChange: (String) -> Unit) {
+fun ColumnScope.CommentSection(value: String, onValueChange: (String) -> Unit) {
   TextField(
     value = value,
     onValueChange = onValueChange,
     modifier = Modifier
-      .padding(vertical = 5.dp)
-      .fillMaxWidth(),
+      .fillMaxWidth()
+      .weight(2f),
     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
   )
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, device = "spec:width=1280dp,height=800dp,dpi=480")
 @Composable
-fun PagePreview(advice: Advice = Advice(currentDate())) {
+fun PagePreview() {
+  val advice = Advice(deadline = currentDate(), canComment = true)
   AlexAppTheme { advice.PerformancePage(example) { } }
 }
 

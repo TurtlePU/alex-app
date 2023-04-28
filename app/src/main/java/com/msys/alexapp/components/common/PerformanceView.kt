@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -32,6 +34,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.msys.alexapp.data.Performance
+import com.msys.alexapp.ui.theme.AlexAppTheme
 import kotlinx.coroutines.delay
 import java.util.Date
 import kotlin.time.Duration
@@ -51,30 +54,54 @@ fun Performance.View(
       Row(
         modifier = Modifier
           .fillMaxWidth()
-          .padding(vertical = 10.dp),
+          .padding(10.dp),
         verticalAlignment = Alignment.Top,
-        horizontalArrangement = Arrangement.SpaceEvenly,
+        horizontalArrangement = Arrangement.SpaceBetween,
       ) {
-        Text(text = category?.firstWord ?: "")
-        Column {
-          Text(text = nomination?.firstWord ?: "")
-          Text(text = age.toString())
-        }
-        Column {
+        Text(
+          text = category?.firstWord ?: "",
+          modifier = Modifier.weight(1f),
+          textAlign = TextAlign.Center,
+          style = MaterialTheme.typography.headlineLarge,
+        )
+        Column(
+          modifier = Modifier.weight(1f),
+          horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
           Text(
-            text = "$name (#$id)",
-            textAlign = TextAlign.Center,
+            text = nomination?.firstWord ?: "",
+            style = MaterialTheme.typography.displayMedium,
+          )
+          Text(
+            text = age.toString(),
+            style = MaterialTheme.typography.displayMedium,
+          )
+        }
+        Column(
+          modifier = Modifier.weight(3f),
+          horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+          Text(
+            text = "(#$id) $name",
+            maxLines = 1,
+            style = MaterialTheme.typography.displayMedium,
           )
           Text(
             text = performance,
-            textAlign = TextAlign.Center
+            maxLines = 1,
+            style = MaterialTheme.typography.displayMedium,
           )
         }
-        Text(
-          text = city ?: "",
-          textAlign = TextAlign.Right
-        )
-        cornerButton()
+        Column(
+          modifier = Modifier.weight(1f),
+          horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+          cornerButton()
+          Text(
+            text = city ?: "",
+            style = MaterialTheme.typography.displayMedium,
+          )
+        }
       }
     },
     bottomBar = bottomBar,
@@ -84,7 +111,6 @@ fun Performance.View(
       modifier = Modifier
         .fillMaxSize()
         .padding(padding),
-      verticalArrangement = Arrangement.SpaceBetween,
     ) {
       Timeout(deadline)
       content()
@@ -126,12 +152,15 @@ fun Timeout(deadline: Date) {
     progress = progress,
     modifier = Modifier
       .fillMaxWidth()
+      .height(10.dp)
       .then(modifier),
     color = color,
   )
 }
 
 fun currentDate(): Date = Calendar.getInstance().time
+
+val Date.nextDeadline: Date get() = Date(time + timeout.inWholeMilliseconds)
 
 val timeout: Duration = 5.minutes
 
@@ -147,8 +176,8 @@ val example = Performance(
   nomination = "song"
 )
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, device = "spec:width=1280dp,height=800dp,dpi=480")
 @Composable
 fun PerformancePreview() {
-  example.View(deadline = Date(currentDate().time + timeout.inWholeMilliseconds)) {}
+  AlexAppTheme { example.View(deadline = currentDate().nextDeadline) {} }
 }

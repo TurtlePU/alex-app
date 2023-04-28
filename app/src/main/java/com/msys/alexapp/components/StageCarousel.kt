@@ -18,7 +18,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
 import com.msys.alexapp.components.common.View
 import com.msys.alexapp.components.common.currentDate
-import com.msys.alexapp.components.common.timeout
+import com.msys.alexapp.components.common.nextDeadline
 import com.msys.alexapp.data.JuryReport
 import com.msys.alexapp.data.Performance
 import kotlinx.coroutines.flow.Flow
@@ -61,7 +61,7 @@ fun StageService.PerformanceDashboard(
   finishStage: () -> Unit,
   dropStaged: suspend () -> Unit,
 ) {
-  val deadline = rememberSaveable { currentDate().time + timeout.inWholeMilliseconds }
+  val deadline = rememberSaveable { currentDate().nextDeadline.time }
   LaunchedEffect(true) { setCurrent(performance, Date(deadline)) }
   var canFinish by rememberSaveable { mutableStateOf(false) }
   var averageRating by rememberSaveable { mutableStateOf(Double.NaN) }
