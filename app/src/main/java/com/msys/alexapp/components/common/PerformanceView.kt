@@ -11,6 +11,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -18,17 +23,31 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.msys.alexapp.data.Performance
 import com.msys.alexapp.ui.theme.AlexAppTheme
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
+import java.util.Date
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun Performance.View(
-  progress: Flow<Float>,
+  deadline: Date,
   cornerButton: @Composable () -> Unit = {},
   bottomBar: @Composable () -> Unit = {},
   floatingActionButton: @Composable () -> Unit = {},
   content: @Composable ColumnScope.() -> Unit,
 ) {
+  var progress by rememberSaveable { mutableStateOf(0f) }
+  LaunchedEffect(true) {
+    withContext(Dispatchers.IO) {
+      val timeout = deadline - currentDate()
+      while (true) {
+        val time = currentDate()
+        progress = (1 - (deadline - time) / timeout).coerceIn(.0, .1).toFloat()
+        delay(1.seconds)
+      }
+    }
+  }
   Scaffold(
     topBar = {
       Row(
@@ -113,5 +132,5 @@ val example = Performance(
 @Preview(showBackground = true, device = "spec:width=1280dp,height=800dp,dpi=480")
 @Composable
 fun PerformancePreview() {
-  AlexAppTheme { example.View(flowOf(1f)) {} }
+  AlexAppTheme { example.View(currentDate()) {} }
 }

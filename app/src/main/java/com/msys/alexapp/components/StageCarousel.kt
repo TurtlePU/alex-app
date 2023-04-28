@@ -20,7 +20,6 @@ import com.msys.alexapp.components.common.View
 import com.msys.alexapp.components.common.currentDate
 import com.msys.alexapp.components.common.defaultTimeout
 import com.msys.alexapp.components.common.plus
-import com.msys.alexapp.components.common.progressFlow
 import com.msys.alexapp.data.JuryReport
 import com.msys.alexapp.data.Performance
 import kotlinx.coroutines.flow.Flow
@@ -64,13 +63,14 @@ fun StageService.PerformanceDashboard(
   finishStage: () -> Unit,
   dropStaged: suspend () -> Unit,
 ) {
-  LaunchedEffect(performance) { setCurrent(performance, currentDate() + defaultTimeout) }
+  val deadline = remember { currentDate() + defaultTimeout }
+  LaunchedEffect(performance) { setCurrent(performance, deadline) }
   var canFinish by rememberSaveable { mutableStateOf(false) }
   var averageRating by rememberSaveable { mutableStateOf(Double.NaN) }
   LaunchedEffect(averageRating) { sendAverageRating(performance.id, averageRating) }
   val scope = rememberCoroutineScope()
   performance.View(
-    progress = progressFlow(::fetchDeadline),
+    deadline = deadline,
     cornerButton = {
       Button(onClick = { scope.launch { dropStaged() } }) {
         Icon(
