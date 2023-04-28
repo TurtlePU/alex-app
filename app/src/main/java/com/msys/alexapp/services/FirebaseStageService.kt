@@ -13,6 +13,8 @@ import kotlinx.coroutines.tasks.await
 import java.util.*
 
 class FirebaseStageService(adminID: String) : FirebaseStageServiceBase(adminID), StageService {
+  override val deadlineFlow: Flow<Date>
+    get() = stage.child("advice/deadline").snapshots.map { Date(it.getValue<Long>() ?: 0) }
   override val canCommentFlow: Flow<Boolean>
     get() = admin.child("canComment").snapshots.map {
       it.exists() && it.getValue<Boolean>() == true

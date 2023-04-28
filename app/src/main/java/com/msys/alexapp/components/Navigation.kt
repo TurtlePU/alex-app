@@ -111,6 +111,7 @@ fun DefaultPreview() {
       }
 
       override fun stageService(adminID: String) = object : StageService {
+        override val deadlineFlow: Flow<Date> get() = flowOf()
         override val canCommentFlow: Flow<Boolean> get() = flowOf()
         override val firstStagedPerformance: Flow<Pair<String, Performance>?> get() = flowOf()
         override val nextStagedPerformance: Flow<String?> get() = flowOf()
