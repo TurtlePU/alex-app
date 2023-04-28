@@ -86,6 +86,7 @@ fun DefaultPreview() {
       override suspend fun signIn(email: String, password: String) {}
       override val contactsFlow: Flow<List<Contact>> get() = flowOf()
       override val currentStageFlow: Flow<String> get() = flowOf()
+      override suspend fun sendDegrees(degrees: Map<Double, String>) {}
       override suspend fun setCanComment(canComment: Boolean) {}
       override suspend fun addContact(email: String, nickname: String) {}
       override suspend fun deleteContact(email: String) {}
@@ -102,6 +103,7 @@ fun DefaultPreview() {
 
       override fun stagePreparationService(adminID: String) = object : StagePreparationService {
         override val performancesFlow: Flow<List<Performance>> get() = flowOf()
+        override val degreeFlow: Flow<SortedMap<Double, String>> get() = flowOf()
         override val stagedFlow: Flow<List<String>> get() = flowOf()
         override val reportFlow: Flow<Map<String, StageReport>> get() = flowOf()
         override suspend fun sendInvitations() {}
@@ -112,6 +114,7 @@ fun DefaultPreview() {
 
       override fun stageService(adminID: String) = object : StageService {
         override val canCommentFlow: Flow<Boolean> get() = flowOf()
+        override val degreeFlow: Flow<SortedMap<Double, String>> get() = flowOf()
         override val firstStagedPerformance: Flow<Pair<String, Performance>?> get() = flowOf()
         override val nextStagedPerformance: Flow<String?> get() = flowOf()
         override val juryIDs: Flow<List<String>> get() = flowOf()

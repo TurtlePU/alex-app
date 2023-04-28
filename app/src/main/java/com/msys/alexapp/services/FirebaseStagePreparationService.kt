@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.zip
 import kotlinx.coroutines.tasks.await
+import java.util.SortedMap
 
 class FirebaseStagePreparationService(adminID: String) : FirebaseStageServiceBase(adminID),
   StagePreparationService {
@@ -18,6 +19,7 @@ class FirebaseStagePreparationService(adminID: String) : FirebaseStageServiceBas
     get() = admin.performances.zip(stage.performances) { a, b ->
       (a + b).sortedBy { it.id.toLong() }
     }
+  override val degreeFlow: Flow<SortedMap<Double, String>> get() = admin.degrees
   override val stagedFlow: Flow<List<String>>
     get() = staged.snapshots.map { staged ->
       staged.children

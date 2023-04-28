@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
@@ -33,6 +34,7 @@ import kotlinx.coroutines.launch
 interface AdminService {
   val contactsFlow: Flow<List<Contact>>
   val currentStageFlow: Flow<String>
+  suspend fun sendDegrees(degrees: Map<Double, String>)
   suspend fun setCanComment(canComment: Boolean)
   suspend fun addContact(email: String, nickname: String)
   suspend fun deleteContact(email: String)
@@ -45,6 +47,8 @@ interface AdminService {
         .map { it.map { (email, nickname) -> Contact(email, nickname) } }
 
     override val currentStageFlow: MutableStateFlow<String>
+
+    override suspend fun sendDegrees(degrees: Map<Double, String>) {}
 
     override suspend fun setCanComment(canComment: Boolean) {}
 
@@ -67,6 +71,13 @@ fun AdminService.Admin(
   loadParticipants: @Composable () -> Task,
   saveResults: @Composable () -> Task,
 ) {
+  LaunchedEffect(true) {
+    sendDegrees(mapOf(
+      10.0 to "Л1", 9.49 to "Л2", 8.99 to "Л3",
+      7.99 to "Д1", 6.99 to "Д2", 5.99 to "Д3",
+      5.0 to "УЧ",
+    ))
+  }
   val scope = rememberCoroutineScope()
   Scaffold(
     bottomBar = {

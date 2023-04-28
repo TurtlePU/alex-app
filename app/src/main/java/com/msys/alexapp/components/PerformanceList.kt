@@ -35,11 +35,14 @@ import com.msys.alexapp.components.stage.cards.NewPerformance
 import com.msys.alexapp.components.stage.cards.StagingCard
 import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.StageReport
+import com.msys.alexapp.data.Summary.Companion.matching
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import java.util.SortedMap
 
 interface StagePreparationService {
   val performancesFlow: Flow<List<Performance>>
+  val degreeFlow: Flow<SortedMap<Double, String>>
   val stagedFlow: Flow<List<String>>
   val reportFlow: Flow<Map<String, StageReport>>
   suspend fun sendInvitations()
@@ -79,6 +82,7 @@ fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
   val stagedSet = staged.toSet()
   val onStage = remember { mutableStateMapOf<String, Unit>() }
   val reports by reportFlow.collectAsStateWithLifecycle(initialValue = mapOf())
+  val degree by degreeFlow.collectAsStateWithLifecycle(initialValue = sortedMapOf())
   var currentTab by remember { mutableStateOf(STAGING) }
   Scaffold(
     topBar = {
@@ -145,7 +149,9 @@ fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
           items(items = items, key = { it.first.id }) { pair ->
             pair.Card(
               isExpanded = { expandedID == it },
-            ) { expandedID = it }
+              onClick = { expandedID = it },
+              degree = { degree.matching(it) },
+            )
           }
         }
       }

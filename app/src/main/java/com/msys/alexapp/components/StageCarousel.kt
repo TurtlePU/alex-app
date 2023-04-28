@@ -1,6 +1,5 @@
 package com.msys.alexapp.components
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowColumn
@@ -22,6 +21,7 @@ import com.msys.alexapp.components.common.defaultTimeout
 import com.msys.alexapp.components.common.plus
 import com.msys.alexapp.data.JuryReport
 import com.msys.alexapp.data.Performance
+import com.msys.alexapp.data.Summary.Companion.matching
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import java.util.*
@@ -33,6 +33,7 @@ data class JuryNote(
 
 interface StageService {
   val canCommentFlow: Flow<Boolean>
+  val degreeFlow: Flow<SortedMap<Double, String>>
   val firstStagedPerformance: Flow<Pair<String, Performance>?>
   val nextStagedPerformance: Flow<String?>
   val juryIDs: Flow<List<String>>
@@ -69,6 +70,7 @@ fun StageService.PerformanceDashboard(
   var averageRating by rememberSaveable { mutableStateOf(Double.NaN) }
   LaunchedEffect(averageRating) { sendAverageRating(performance.id, averageRating) }
   val scope = rememberCoroutineScope()
+  val degree by degreeFlow.collectAsStateWithLifecycle(initialValue = sortedMapOf())
   performance.View(
     deadline = deadline,
     cornerButton = {
@@ -79,7 +81,9 @@ fun StageService.PerformanceDashboard(
         )
       }
     },
-    bottomBar = { RatingBar(averageRating) },
+    bottomBar = {
+      RatingBar(averageRating, if (averageRating.isNaN()) "" else degree.matching(averageRating))
+    },
     floatingActionButton = {
       nextStagedPerformance.collectAsStateWithLifecycle(initialValue = null).value
         ?.let { id -> NextButton(id, canFinish) { scope.launch { dropStaged() } } }
@@ -104,30 +108,20 @@ fun StageService.PerformanceDashboard(
         }
       }
       canFinish = allRated
-      averageRating = (list.average() * 100).toLong() * .01
+      val avg = list.average()
+      averageRating = if (avg.isNaN()) avg else (avg * 100).toLong() * .01
     }
   }
 }
 
 @Composable
-fun RatingBar(averageRating: Double) {
+fun RatingBar(averageRating: Double, degree: String) {
   if (!averageRating.isNaN()) {
     Row {
       Text(text = averageRating.toString())
-      Text(text = stringResource(place(averageRating)))
+      Text(text = degree)
     }
   }
-}
-
-@StringRes
-fun place(rating: Double): Int = when {
-  rating >= 9.5 -> R.string.laureate_1
-  rating >= 9.0 -> R.string.laureate_2
-  rating >= 8.5 -> R.string.laureate_3
-  rating >= 8.0 -> R.string.diploma_1
-  rating >= 7.5 -> R.string.diploma_2
-  rating >= 7.0 -> R.string.diploma_3
-  else -> R.string.participant
 }
 
 @Composable

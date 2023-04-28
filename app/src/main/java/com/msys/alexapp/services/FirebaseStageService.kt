@@ -17,6 +17,7 @@ class FirebaseStageService(adminID: String) : FirebaseStageServiceBase(adminID),
     get() = admin.child("canComment").snapshots.map {
       it.exists() && it.getValue<Boolean>() == true
     }
+  override val degreeFlow: Flow<SortedMap<Double, String>> get() = admin.degrees
 
   @OptIn(ExperimentalCoroutinesApi::class)
   override val firstStagedPerformance: Flow<Pair<String, Performance>?>

@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.asDeferred
 import kotlinx.coroutines.tasks.await
+import java.util.SortedMap
 
 val currentUID: String get() = FirebaseAuth.getInstance().uid!!
 val currentEmail: String get() = FirebaseAuth.getInstance().currentUser!!.email!!
@@ -34,6 +35,15 @@ suspend fun DatabaseReference.chooseFriends(myRole: Role, emails: Map<String, St
 val DatabaseReference.performances: Flow<List<Performance>>
   get() = child("performances").snapshots.map {
     it.children.map(DataSnapshot::asPerformance)
+  }
+
+val DatabaseReference.degrees: Flow<SortedMap<Double, String>>
+  get() = child("degrees").snapshots.map {
+    it.getValue<Map<String, Double>>()
+      .orEmpty()
+      .entries
+      .associate { (key, value) -> value to key }
+      .toSortedMap()
   }
 
 val DataSnapshot.asPerformance: Performance

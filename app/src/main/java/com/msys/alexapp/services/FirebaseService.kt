@@ -10,6 +10,7 @@ import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.Role
 import com.msys.alexapp.data.StageReport.Companion.asStageReportOrNull
 import com.msys.alexapp.data.Summary
+import com.msys.alexapp.data.Summary.Companion.matching
 import com.msys.alexapp.data.Summary.Companion.toSummary
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -31,6 +32,10 @@ object FirebaseService : AlexAppService {
   override val currentStageFlow: Flow<String>
     get() = admin.child("friends").snapshots
       .mapNotNull { it.children.firstOrNull()?.key?.replace(',', '.') }
+
+  override suspend fun sendDegrees(degrees: Map<Double, String>) {
+    admin.child("degrees").setValue(degrees.entries.associate { it.value to it.key }).await()
+  }
 
   override suspend fun setCanComment(canComment: Boolean) {
     admin.child("canComment").setValue(canComment).await()
@@ -70,16 +75,9 @@ object FirebaseService : AlexAppService {
     val snap = data.child("$stage/report").get().await()
     val map = snap.children.associate { it.key!! to it.asStageReportOrNull }
     val participants = admin.performances.first() + data.child(stage).performances.first()
-    val degrees =
-      admin.child("degrees").get().await()
-        .getValue<Map<String, Double>>()
-        .orEmpty()
-        .entries
-        .associate { it.value to it.key }
-        .toSortedMap()
-    val deg = { rating: Double -> degrees.tailMap(rating).values.first() }
+    val degrees = admin.degrees.first()
     return participants
-      .mapNotNull { map[it.id]?.toSummary(it, deg) }
+      .mapNotNull { map[it.id]?.toSummary(it) { rating -> degrees.matching(rating) } }
       .sortedBy { it.id.toLong() }
   }
 }

@@ -2,7 +2,7 @@ package com.msys.alexapp.components.stage.cards
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,15 +33,16 @@ import com.msys.alexapp.data.StageReport
 fun Pair<Performance, StageReport>.Card(
   isExpanded: (String) -> Boolean,
   onClick: (String) -> Unit,
+  degree: (Double) -> String,
 ) {
   Column(modifier = Modifier.clickable { onClick(first.id) }) {
     first.Card()
-    AnimatedVisibility(visible = isExpanded(first.id)) { second.Card() }
+    AnimatedVisibility(visible = isExpanded(first.id)) { second.Card(degree) }
   }
 }
 
 @Composable
-fun StageReport.Card() {
+fun StageReport.Card(degree: (Double) -> String) {
   Row(
     modifier = Modifier.fillMaxWidth(),
     verticalAlignment = Alignment.CenterVertically,
@@ -63,11 +64,12 @@ fun StageReport.Card() {
         contentDescription = stringResource(R.string.copy_comments),
       )
     }
-    Box(
+    Row(
       modifier = Modifier.weight(1f),
-      contentAlignment = Alignment.Center,
+      horizontalArrangement = Arrangement.Center,
     ) {
       Text(text = averageRating.toString())
+      Text(text = degree(averageRating))
     }
   }
 }
@@ -76,13 +78,17 @@ fun StageReport.Card() {
 @Composable
 fun ReportCardPreview() {
   var expand by rememberSaveable { mutableStateOf(false) }
-  (example to exampleReport).Card(isExpanded = { expand }) { expand = !expand }
+  (example to exampleReport).Card(
+    isExpanded = { expand },
+    onClick = { expand = !expand },
+    degree = { "УЧ" }
+  )
 }
 
 @Preview(showBackground = true)
 @Composable
 fun ReportPreview() {
-  exampleReport.Card()
+  exampleReport.Card { "УЧ" }
 }
 
 val exampleReport = StageReport(
