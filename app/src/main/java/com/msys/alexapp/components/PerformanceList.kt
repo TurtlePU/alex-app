@@ -74,6 +74,7 @@ fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
     ready = true
   }
   val performances by performancesFlow.collectAsStateWithLifecycle(initialValue = listOf())
+  val performanceIds = performances.map { it.id }.toSet()
   val staged by stagedFlow.collectAsStateWithLifecycle(initialValue = listOf())
   val stagedSet = staged.toSet()
   val onStage = remember { mutableStateMapOf<String, Unit>() }
@@ -97,6 +98,12 @@ fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
         }
       }
     },
+    bottomBar = {
+      if (currentTab == STAGING && ready) {
+        val initialID = performances.maxOfOrNull { it.id.toLong() + 1 } ?: 0
+        NewPerformance(initialID, { !performanceIds.contains(it.toString()) }, ::newPerformance)
+      }
+    },
     floatingActionButton = {
       if (currentTab == STAGING && ready && (onStage.isNotEmpty() || staged.isNotEmpty())) {
         val scope = rememberCoroutineScope()
@@ -109,7 +116,7 @@ fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
           )
         }
       }
-    }
+    },
   ) { padding ->
     val modifier = Modifier.padding(padding)
     when (currentTab) {
@@ -123,8 +130,6 @@ fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
               removeStaged = onStage::remove,
             )
           }
-          val initialID = performances.maxOfOrNull { it.id.toLong() + 1 } ?: 0
-          item { NewPerformance(initialID, ::newPerformance) }
         }
       }
 

@@ -26,7 +26,11 @@ import com.msys.alexapp.data.Performance
 import com.msys.alexapp.ui.theme.AlexAppTheme
 
 @Composable
-fun NewPerformance(initialID: Long, send: suspend (Performance) -> Unit) {
+fun NewPerformance(
+  initialID: Long,
+  isGoodId: (Long) -> Boolean,
+  send: suspend (Performance) -> Unit,
+) {
   HiddenForm(
     modifier = Modifier.fillMaxWidth().padding(5.dp),
     contentArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterHorizontally),
@@ -62,7 +66,7 @@ fun NewPerformance(initialID: Long, send: suspend (Performance) -> Unit) {
         imeAction = ImeAction.Done,
       ),
     )
-    Commitment((id?.let { it >= initialID } ?: false) && name != null && performance != null) {
+    Commitment((id?.let(isGoodId) ?: false) && name != null && performance != null) {
       send(anonymousPerformance(id!!, name!!, performance!!))
     }
   }
@@ -78,5 +82,5 @@ fun anonymousPerformance(id: Long, name: String, performance: String) = Performa
 @Preview(showBackground = true, device = "spec:width=1280dp,height=800dp,dpi=480")
 @Composable
 fun NewPerformancePreview() {
-  AlexAppTheme { NewPerformance(initialID = 0) { } }
+  AlexAppTheme { NewPerformance(initialID = 0, isGoodId = { true }) { } }
 }

@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -59,10 +60,11 @@ fun HiddenForm(
       }
     } else {
       Button(onClick = { draft = true }) {
-        Icon(
-          imageVector = Icons.Filled.Add,
-          contentDescription = commitDescription,
-        )
+        if (commitDescription != null) {
+          Text(text = commitDescription)
+        } else {
+          Icon(imageVector = Icons.Filled.Add, contentDescription = null)
+        }
       }
     }
   }

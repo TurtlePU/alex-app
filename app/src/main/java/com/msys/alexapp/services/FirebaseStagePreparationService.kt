@@ -24,7 +24,9 @@ class FirebaseStagePreparationService(adminID: String) : FirebaseStageServiceBas
   }
 
   override val performancesFlow: Flow<List<Performance>>
-    get() = admin.performances.zip(stage.performances) { a, b -> a + b }
+    get() = admin.performances.zip(stage.performances) { a, b ->
+      (a + b).sortedBy { it.id.toLong() }
+    }
   override val stagedFlow: Flow<List<String>>
     get() = staged.snapshots.map { staged ->
       staged.children
