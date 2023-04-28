@@ -105,7 +105,7 @@ fun StageService.PerformanceDashboard(
         }
       }
       canFinish = allRated
-      averageRating = list.average()
+      averageRating = (list.average() * 100).toLong() * .01
     }
   }
 }
