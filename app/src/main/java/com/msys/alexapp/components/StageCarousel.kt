@@ -3,7 +3,7 @@ package com.msys.alexapp.components
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.FlowColumn
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -88,7 +88,7 @@ fun StageService.PerformanceDashboard(
         }
     }
   ) {
-    FlowRow {
+    FlowColumn {
       val list = mutableListOf<Double>()
       var allRated = true
       for (juryID in juryIDs) {
@@ -96,7 +96,6 @@ fun StageService.PerformanceDashboard(
         Card {
           Text(text = note?.nickname ?: stringResource(R.string.default_jury_nickname))
           Text(text = note?.report?.rating?.toString() ?: "")
-          Text(text = note?.report?.comment ?: "")
         }
         allRated = allRated && note?.report?.rating != null
         note?.report?.rating?.let { list.add(it) }
