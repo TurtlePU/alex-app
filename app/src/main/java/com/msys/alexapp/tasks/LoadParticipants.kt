@@ -55,13 +55,31 @@ val Row.asPerformance: Performance?
     val performance =
       if (getCell(11)?.cellTypeEnum == CellType.STRING) getCell(11).stringCellValue
       else return null
+    val age =
+      when (getCell('S' - 'A')?.cellTypeEnum) {
+        CellType.NUMERIC -> getCell('S' - 'A').numericCellValue.toLong()
+        CellType.BLANK -> null
+        else -> return null
+      }
+    val city =
+      when (getCell('U' - 'A')?.cellTypeEnum) {
+        CellType.STRING -> getCell('U' - 'A').stringCellValue
+        CellType.BLANK -> null
+        else -> return null
+      }
+    val category =
+      when (getCell('I' - 'A')?.cellTypeEnum) {
+        CellType.STRING -> getCell('I' - 'A').stringCellValue
+        CellType.BLANK -> null
+        else -> return null
+      }
     return Performance(
       id = id.toString(),
       nomination = nomination,
       name = name,
       performance = performance,
-      age = null,
-      city = null,
-      category = null,
+      age = age,
+      city = city,
+      category = category,
     )
   }
