@@ -108,7 +108,12 @@ fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
       if (currentTab == STAGING && ready && (onStage.isNotEmpty() || staged.isNotEmpty())) {
         val scope = rememberCoroutineScope()
         FloatingActionButton(
-          onClick = { scope.launch { appendToStage(onStage.keys.toList()); startStage() } },
+          onClick = {
+            scope.launch {
+              appendToStage(onStage.keys.sortedBy { it.toLong() }.toList())
+              startStage()
+            }
+          },
         ) {
           Icon(
             imageVector = Icons.Filled.Start,
