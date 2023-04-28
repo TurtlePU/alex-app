@@ -20,13 +20,16 @@ fun saveResults(): Task = launchedTask(
   var count = 0
   val juryColumns = mutableMapOf<String, Int>()
   val results = FirebaseService.collectResults()
-  for ((id, report) in results) {
+  for (result in results) {
     sheet.createRow(++count).run {
-      createCell(0).setCellValue(id)
-      createCell(1).setCellValue(report?.averageRating ?: Double.NaN)
-      for ((jury, comment) in report?.comments ?: mapOf()) {
+      createCell(0).setCellValue(result.id)
+      createCell(1).setCellValue(result.name)
+      createCell(2).setCellValue(result.performance)
+      createCell(3).setCellValue(result.degree)
+      createCell(4).setCellValue(result.rating)
+      for ((jury, comment) in result.comments) {
         val column = juryColumns.computeIfAbsent(jury) {
-          juryColumns.maxOfOrNull { it.value + 1 } ?: 2
+          juryColumns.maxOfOrNull { it.value + 1 } ?: 5
         }
         createCell(column).setCellValue(comment)
       }

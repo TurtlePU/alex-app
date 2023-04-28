@@ -5,9 +5,12 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ktx.getValue
+import com.google.firebase.database.ktx.snapshots
 import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.Role
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.asDeferred
 import kotlinx.coroutines.tasks.await
 
@@ -27,6 +30,11 @@ suspend fun DatabaseReference.chooseFriends(myRole: Role, emails: Map<String, St
     .awaitAll()
   friendTask.await()
 }
+
+val DatabaseReference.performances: Flow<List<Performance>>
+  get() = child("performances").snapshots.map {
+    it.children.map(DataSnapshot::asPerformance)
+  }
 
 val DataSnapshot.asPerformance: Performance
   get() = Performance(

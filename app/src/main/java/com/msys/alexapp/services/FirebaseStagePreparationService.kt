@@ -1,7 +1,5 @@
 package com.msys.alexapp.services
 
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.database.ktx.snapshots
 import com.msys.alexapp.components.StagePreparationService
@@ -16,13 +14,6 @@ import kotlinx.coroutines.tasks.await
 
 class FirebaseStagePreparationService(adminID: String) : FirebaseStageServiceBase(adminID),
   StagePreparationService {
-  companion object {
-    private val DatabaseReference.performances: Flow<List<Performance>>
-      get() = child("performances").snapshots.map {
-        it.children.map(DataSnapshot::asPerformance)
-      }
-  }
-
   override val performancesFlow: Flow<List<Performance>>
     get() = admin.performances.zip(stage.performances) { a, b ->
       (a + b).sortedBy { it.id.toLong() }
