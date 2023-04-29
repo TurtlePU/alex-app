@@ -3,6 +3,7 @@ package com.msys.alexapp.components.stage.cards
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -11,7 +12,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -32,8 +32,10 @@ fun NewPerformance(
   send: suspend (Performance) -> Unit,
 ) {
   HiddenForm(
-    modifier = Modifier.fillMaxWidth().padding(5.dp),
-    contentArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterHorizontally),
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(5.dp),
+    contentArrangement = Arrangement.spacedBy(15.dp),
     commitDescription = stringResource(R.string.add_performance),
   ) {
     var id: Long? by rememberSaveable { mutableStateOf(initialID) }
@@ -42,6 +44,7 @@ fun NewPerformance(
     OutlinedTextField(
       value = id?.toString() ?: "",
       onValueChange = { id = it.toLongOrNull() },
+      modifier = Modifier.width(90.dp),
       label = { Text("#") },
       keyboardOptions = KeyboardOptions(
         keyboardType = KeyboardType.Number,
@@ -51,7 +54,8 @@ fun NewPerformance(
     OutlinedTextField(
       value = name ?: "",
       onValueChange = { name = it },
-      placeholder = { Text(stringResource(R.string.name_label)) },
+      modifier = Modifier.weight(1f),
+      label = { Text(stringResource(R.string.name_label)) },
       keyboardOptions = KeyboardOptions(
         capitalization = KeyboardCapitalization.Words,
         imeAction = ImeAction.Next,
@@ -60,7 +64,8 @@ fun NewPerformance(
     OutlinedTextField(
       value = performance ?: "",
       onValueChange = { performance = it },
-      placeholder = { Text(stringResource(R.string.performance_label)) },
+      modifier = Modifier.weight(1f),
+      label = { Text(stringResource(R.string.performance_label)) },
       keyboardOptions = KeyboardOptions(
         capitalization = KeyboardCapitalization.Sentences,
         imeAction = ImeAction.Done,
@@ -79,8 +84,8 @@ fun anonymousPerformance(id: Long, name: String, performance: String) = Performa
   null, null, null, null
 )
 
-@Preview(showBackground = true, device = "spec:width=1280dp,height=800dp,dpi=480")
+@Preview(showBackground = true, device = "id:Nexus 9")
 @Composable
 fun NewPerformancePreview() {
-  AlexAppTheme { NewPerformance(initialID = 0, isGoodId = { true }) { } }
+  AlexAppTheme { NewPerformance(initialID = 123, isGoodId = { true }) { } }
 }

@@ -3,6 +3,8 @@ package com.msys.alexapp.components.common
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Cancel
@@ -44,14 +46,18 @@ fun HiddenForm(
         val scope = rememberCoroutineScope()
         Button(
           onClick = { scope.launch { commitment.onCommit(); draft = false } },
-          enabled = commitment.canCommit
+          enabled = commitment.canCommit,
+          shape = CircleShape.copy(topEnd = CornerSize(0), bottomEnd = CornerSize(0))
         ) {
           Icon(
             imageVector = Icons.Filled.Check,
             contentDescription = commitDescription,
           )
         }
-        Button(onClick = { draft = false }) {
+        Button(
+          onClick = { draft = false },
+          shape = CircleShape.copy(topStart = CornerSize(0), bottomStart = CornerSize(0))
+        ) {
           Icon(
             imageVector = Icons.Filled.Cancel,
             contentDescription = stringResource(R.string.cancel),
