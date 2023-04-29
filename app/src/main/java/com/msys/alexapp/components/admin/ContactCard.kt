@@ -6,8 +6,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,16 +33,14 @@ fun Contact.Card(
   val bg =
     if (isStage(email)) Modifier.background(MaterialTheme.colorScheme.secondary)
     else Modifier
-  Row(modifier = bg.fillMaxWidth()) {
-    Row(
-      modifier = Modifier
-        .clickable { setStage(email) }
-        .fillMaxWidth()
-    ) {
-      Text(text = email, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-      Text(text = nickname, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-    }
-    Button(onClick = { deleteContact(email) }) {
+  Row(
+    modifier = bg
+      .fillMaxWidth()
+      .clickable { setStage(email) }
+  ) {
+    Text(text = email, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
+    Text(text = nickname, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
+    IconButton(onClick = { deleteContact(email) }) {
       Icon(
         imageVector = Icons.Filled.Delete,
         contentDescription = stringResource(R.string.delete_contact),
@@ -51,7 +49,7 @@ fun Contact.Card(
   }
 }
 
-@Preview(showBackground = true, device = "spec:width=1280dp,height=800dp,dpi=480")
+@Preview(showBackground = true, device = "id:Nexus 9")
 @Composable
 fun ContactCardPreview() {
   AlexAppTheme {
