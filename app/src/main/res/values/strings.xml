@@ -35,4 +35,9 @@
     <string name="name_label">Имя</string>
     <string name="performance_label">Номер</string>
     <string name="age_template">%1$d лет</string>
+    <string name="performance_header">Выступление</string>
+    <string name="name_header">Имя</string>
+    <string name="id_header">№</string>
+    <string name="degree_header">Степень</string>
+    <string name="rating_header">Средняя оценка</string>
 </resources>
