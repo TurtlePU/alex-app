@@ -113,15 +113,12 @@ fun Advice.PerformancePage(
           )
         }
       }
-    }
+    },
+    verticalArrangement = Arrangement.spacedBy(10.dp)
   ) {
-    Column(
-      verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-      RatingPad(rating) { rating = it }
-      if (canComment) {
-        CommentSection(comment ?: "") { comment = it }
-      }
+    RatingPad(rating) { rating = it }
+    if (canComment) {
+      CommentSection(comment ?: "") { comment = it }
     }
   }
 }
@@ -198,7 +195,7 @@ fun ColumnScope.CommentSection(value: String, onValueChange: (String) -> Unit) {
   )
 }
 
-@Preview(showBackground = true, device = "spec:width=1280dp,height=800dp,dpi=480")
+@Preview(showBackground = true, device = "id:Nexus 10")
 @Composable
 fun PagePreview() {
   val advice = Advice(deadline = currentDate(), canComment = true)
