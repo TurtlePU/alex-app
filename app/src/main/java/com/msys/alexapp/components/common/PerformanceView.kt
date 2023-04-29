@@ -102,7 +102,7 @@ fun Timeout(deadline: Date) {
       delay(1000.milliseconds)
     }
   }
-  val progress = (1 - (deadline - time) / defaultTimeout).coerceIn(.0, .1).toFloat()
+  val progress = (1 - (deadline - time) / defaultTimeout).coerceIn(0.0, 1.0).toFloat()
   val infiniteTransition = rememberInfiniteTransition()
   val animatedElevation by infiniteTransition.animateFloat(
     initialValue = 0f,
