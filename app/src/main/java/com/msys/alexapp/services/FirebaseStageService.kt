@@ -58,9 +58,6 @@ class FirebaseStageService(adminID: String) : FirebaseStageServiceBase(adminID),
     task.await()
   }
 
-  override suspend fun fetchDeadline() =
-    Date(stage.child("advice/deadline").get().await().getValue<Long>() ?: 0)
-
   override suspend fun sendAverageRating(performanceID: String, averageRating: Double) {
     if (!averageRating.isNaN()) {
       stage.child("report/$performanceID/average").setValue(averageRating).await()

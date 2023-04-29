@@ -23,6 +23,7 @@ import com.msys.alexapp.components.admin.Card
 import com.msys.alexapp.components.admin.CommentBox
 import com.msys.alexapp.components.admin.Contact
 import com.msys.alexapp.components.admin.NewContact
+import com.msys.alexapp.data.defaultDegrees
 import com.msys.alexapp.tasks.Task
 import com.msys.alexapp.tasks.TaskButton
 import com.msys.alexapp.tasks.dummyTask
@@ -72,11 +73,7 @@ fun AdminService.Admin(
   saveResults: @Composable () -> Task,
 ) {
   LaunchedEffect(true) {
-    sendDegrees(mapOf(
-      10.0 to "Л1", 9.49 to "Л2", 8.99 to "Л3",
-      7.99 to "Д1", 6.99 to "Д2", 5.99 to "Д3",
-      5.0 to "УЧ",
-    ))
+    sendDegrees(defaultDegrees)
   }
   val scope = rememberCoroutineScope()
   Scaffold(

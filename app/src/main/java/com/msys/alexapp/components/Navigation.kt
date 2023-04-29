@@ -122,7 +122,6 @@ fun DefaultPreview() {
         override suspend fun dropStaged(key: String) {}
         override suspend fun setCanComment(canComment: Boolean) {}
         override suspend fun setCurrent(performance: Performance, deadline: Date) {}
-        override suspend fun fetchDeadline() = currentDate()
         override suspend fun sendAverageRating(performanceID: String, averageRating: Double) {}
         override suspend fun publishComment(
           performanceID: String,

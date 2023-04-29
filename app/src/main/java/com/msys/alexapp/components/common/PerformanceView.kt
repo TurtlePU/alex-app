@@ -47,6 +47,7 @@ fun Performance.View(
   bottomBar: @Composable () -> Unit = {},
   floatingActionButton: @Composable () -> Unit = {},
   verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+  horizontalAlignment: Alignment.Horizontal = Alignment.Start,
   content: @Composable ColumnScope.() -> Unit,
 ) {
   Scaffold(
@@ -82,6 +83,7 @@ fun Performance.View(
         .fillMaxSize()
         .padding(padding),
       verticalArrangement = verticalArrangement,
+      horizontalAlignment = horizontalAlignment,
     ) {
       Timeout(deadline)
       content()

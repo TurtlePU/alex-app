@@ -96,5 +96,6 @@ val exampleReport = StageReport(
     "Android" to "Wow, amazing!",
     "Safari" to "Mediocre, wouldn't recommend",
     "Talky" to "Wow tg do fg jd fg xcv talk talk talk I really liked the way you",
+    "Another" to "ok, i guess",
   )
 )
