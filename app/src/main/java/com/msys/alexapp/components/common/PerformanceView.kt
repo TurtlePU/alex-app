@@ -34,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.msys.alexapp.R
 import com.msys.alexapp.data.Performance
+import com.msys.alexapp.ui.theme.AlexAppTheme
 import kotlinx.coroutines.delay
 import java.util.Date
 import kotlin.time.Duration
@@ -59,18 +60,33 @@ fun Performance.View(
         verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.SpaceEvenly,
       ) {
-        Text(text = category?.firstWord ?: "")
-        Column {
+        Text(
+          text = category?.firstWord ?: "",
+          modifier = Modifier.weight(1f),
+          textAlign = TextAlign.Center,
+        )
+        Column(
+          modifier = Modifier.weight(1f),
+          horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
           Text(text = nomination?.firstWord ?: "", maxLines = 1)
           Text(text = age?.let { stringResource(R.string.age_template, it) } ?: "")
         }
-        Column {
-          Text(text = "(#$id) $name", textAlign = TextAlign.Center, maxLines = 1)
-          Text(text = performance, textAlign = TextAlign.Center, maxLines = 1)
+        Column(
+          modifier = Modifier.weight(1f),
+          horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+          Text(
+            text = "(#$id) $name",
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+          )
+          Text(text = performance, maxLines = 1)
         }
         Text(
           text = city ?: "",
-          textAlign = TextAlign.Right
+          modifier = Modifier.weight(1f),
+          textAlign = TextAlign.Center,
         )
         cornerButton()
       }
@@ -136,7 +152,7 @@ val String.firstWord: String get() = this.trim().split(' ').first()
 
 val example = Performance(
   id = "0",
-  name = "Android",
+  name = "Android, Kelly Donovan, Winners of the stage and others, including you, your mom",
   city = "New York",
   category = "II",
   performance = "Sing Along",
@@ -144,8 +160,10 @@ val example = Performance(
   nomination = "song"
 )
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, device = "id:Nexus 10")
 @Composable
 fun PerformancePreview() {
-  example.View(deadline = currentDate()) {}
+  AlexAppTheme {
+    example.View(deadline = currentDate()) {}
+  }
 }
