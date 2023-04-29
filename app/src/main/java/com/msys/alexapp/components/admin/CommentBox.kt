@@ -11,6 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.msys.alexapp.R
+import com.msys.alexapp.ui.theme.AlexAppTheme
 
 @Composable
 fun CommentBox(setCanComment: (Boolean) -> Unit) {
@@ -30,5 +31,5 @@ fun CommentBox(setCanComment: (Boolean) -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun CommentBoxPreview() {
-  CommentBox { }
+  AlexAppTheme { CommentBox { } }
 }
