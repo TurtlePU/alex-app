@@ -28,9 +28,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.msys.alexapp.R
 import com.msys.alexapp.data.Performance
 import kotlinx.coroutines.delay
 import java.util.Date
@@ -58,7 +60,7 @@ fun Performance.View(
         Text(text = category?.firstWord ?: "")
         Column {
           Text(text = nomination?.firstWord ?: "", maxLines = 1)
-          Text(text = age.toString())
+          Text(text = age?.let { stringResource(R.string.age_template, it) } ?: "")
         }
         Column {
           Text(text = "(#$id) $name", textAlign = TextAlign.Center, maxLines = 1)

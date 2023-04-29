@@ -34,4 +34,5 @@
     <string name="login_admin">Я админ</string>
     <string name="name_label">Имя</string>
     <string name="performance_label">Номер</string>
+    <string name="age_template">%1$d лет</string>
 </resources>
