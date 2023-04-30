@@ -73,7 +73,7 @@ fun Performance.View(
           Text(text = age?.let { stringResource(R.string.age_template, it) } ?: "")
         }
         Column(
-          modifier = Modifier.weight(1f),
+          modifier = Modifier.weight(6f),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
           Text(
@@ -85,7 +85,7 @@ fun Performance.View(
         }
         Text(
           text = city ?: "",
-          modifier = Modifier.weight(1f),
+          modifier = Modifier.weight(2f),
           textAlign = TextAlign.Center,
         )
         cornerButton()
@@ -125,7 +125,7 @@ fun Timeout(deadline: Date) {
   val infiniteTransition = rememberInfiniteTransition()
   val animatedElevation by infiniteTransition.animateFloat(
     initialValue = 0f,
-    targetValue = 5f,
+    targetValue = 20f,
     animationSpec = infiniteRepeatable(
       animation = tween(easing = FastOutLinearInEasing),
       repeatMode = RepeatMode.Reverse,
