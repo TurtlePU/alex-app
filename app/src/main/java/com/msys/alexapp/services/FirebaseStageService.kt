@@ -67,8 +67,12 @@ class FirebaseStageService(adminID: String) : FirebaseStageServiceBase(adminID),
   override suspend fun publishComment(
     performanceID: String,
     juryNickname: String,
+    rating: Double,
     comment: String
   ) {
-    stage.child("report/$performanceID/comments/$juryNickname").setValue(comment).await()
+    stage.child("report/$performanceID/comments/$juryNickname").setValue(mapOf(
+      "rating" to rating,
+      "comment" to comment
+    )).await()
   }
 }

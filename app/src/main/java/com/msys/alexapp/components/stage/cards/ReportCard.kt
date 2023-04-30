@@ -26,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.msys.alexapp.R
 import com.msys.alexapp.components.common.example
+import com.msys.alexapp.data.JuryReport
 import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.StageReport
 
@@ -47,7 +48,9 @@ fun StageReport.Card(degree: (Double) -> String) {
     modifier = Modifier.fillMaxWidth(),
     verticalAlignment = Alignment.CenterVertically,
   ) {
-    val commentText = comments.entries.joinToString(separator = "\n") { it.run { "$key: $value" } }
+    val commentText = comments.entries.joinToString(separator = "\n") {
+      it.value.comment?.let { comment -> "${it.key}: $comment" } ?: ""
+    }
     Text(
       text = commentText,
       modifier = Modifier
@@ -92,10 +95,10 @@ fun ReportPreview() {
 }
 
 val exampleReport = StageReport(
-  5.0, mapOf(
-    "Android" to "Wow, amazing!",
-    "Safari" to "Mediocre, wouldn't recommend",
-    "Talky" to "Wow tg do fg jd fg xcv talk talk talk I really liked the way you",
-    "Another" to "ok, i guess",
+  7.5, mapOf(
+    "Android" to JuryReport(9.0, "Wow, amazing!"),
+    "Safari" to JuryReport(6.5, "Mediocre, wouldn't recommend"),
+    "Talky" to JuryReport(7.0, "Wow tg do fg jd fg xcv talk talk talk I really liked the way you"),
+    "Another" to JuryReport(7.5, "ok, i guess"),
   )
 )

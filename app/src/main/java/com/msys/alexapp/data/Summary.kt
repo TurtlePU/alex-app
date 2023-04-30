@@ -8,7 +8,7 @@ data class Summary(
   val performance: String,
   val rating: Double,
   val degree: String,
-  val comments: Map<String, String>
+  val comments: Map<String, JuryReport>
 ) {
   companion object {
     fun StageReport.toSummary(

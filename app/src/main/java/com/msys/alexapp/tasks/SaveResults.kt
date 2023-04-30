@@ -65,9 +65,10 @@ fun saveResults(): Task = launchedTask(
       getCell(Columns.RATING.ordinal).setCellValue(result.rating)
       for ((jury, comment) in result.comments) {
         val column = juryColumns.computeIfAbsent(jury) {
-          juryColumns.maxOfOrNull { it.value + 1 } ?: Columns.values().size
+          juryColumns.maxOfOrNull { it.value + 2 } ?: Columns.values().size
         }
-        createCell(column).setCellValue(comment)
+        createCell(column).setCellValue(comment.rating)
+        comment.comment?.let { createCell(column + 1).setCellValue(it) }
       }
     }
     send(.3f * count / results.size)

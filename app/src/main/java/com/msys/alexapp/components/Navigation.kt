@@ -126,6 +126,7 @@ fun DefaultPreview() {
         override suspend fun publishComment(
           performanceID: String,
           juryNickname: String,
+          rating: Double,
           comment: String
         ) {
         }

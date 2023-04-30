@@ -57,7 +57,12 @@ interface StageService {
   suspend fun setCanComment(canComment: Boolean)
   suspend fun setCurrent(performance: Performance, deadline: Date)
   suspend fun sendAverageRating(performanceID: String, averageRating: Double)
-  suspend fun publishComment(performanceID: String, juryNickname: String, comment: String)
+  suspend fun publishComment(
+    performanceID: String,
+    juryNickname: String,
+    rating: Double,
+    comment: String
+  )
 
   interface Dummy : StageService {
     val notes: SnapshotStateMap<String, JuryNote>
@@ -70,6 +75,7 @@ interface StageService {
     override suspend fun publishComment(
       performanceID: String,
       juryNickname: String,
+      rating: Double,
       comment: String
     ) {
     }
@@ -138,7 +144,9 @@ fun StageService.PerformanceDashboard(
         val note by readNote(juryID, performance.id).collectAsStateWithLifecycle(null)
         Card(modifier = Modifier.padding(20.dp)) {
           Column(
-            modifier = Modifier.padding(10.dp).widthIn(min = 300.dp),
+            modifier = Modifier
+              .padding(10.dp)
+              .widthIn(min = 300.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
           ) {
             Text(text = note?.nickname ?: stringResource(R.string.default_jury_nickname))
@@ -148,7 +156,9 @@ fun StageService.PerformanceDashboard(
         allRated = allRated && note?.report?.rating != null
         note?.report?.rating?.let { list.add(it) }
         LaunchedEffect(note?.nickname, note?.report?.comment) {
-          note?.report?.comment?.let { publishComment(performance.id, note!!.nickname, it) }
+          note?.report?.comment?.let {
+            publishComment(performance.id, note!!.nickname, note!!.report!!.rating, it)
+          }
         }
       }
       canFinish = allRated
@@ -216,7 +226,7 @@ fun PerformanceDashboardPreview() {
     val dummy = object : StageService.Dummy {
       override val notes: SnapshotStateMap<String, JuryNote> =
         exampleReport.comments.mapValuesTo(remember { mutableStateMapOf() }) { (email, comment) ->
-          JuryNote(email, JuryReport(exampleReport.averageRating, comment))
+          JuryNote(email, comment)
         }
       override val canCommentFlow: Flow<Boolean> get() = flowOf()
       override val degreeFlow: Flow<SortedMap<Double, String>> get() = flowOf(defaultDegrees)
