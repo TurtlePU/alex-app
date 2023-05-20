@@ -57,12 +57,8 @@ interface StageService {
   suspend fun setCanComment(canComment: Boolean)
   suspend fun setCurrent(performance: Performance, deadline: Date)
   suspend fun sendAverageRating(performanceID: String, averageRating: Double)
-  suspend fun publishComment(
-    performanceID: String,
-    juryNickname: String,
-    rating: Double,
-    comment: String
-  )
+  suspend fun publishRating(performanceID: String, juryNickname: String, rating: Double)
+  suspend fun publishComment(performanceID: String, juryNickname: String, comment: String)
 
   interface Dummy : StageService {
     val notes: SnapshotStateMap<String, JuryNote>
@@ -72,10 +68,16 @@ interface StageService {
     override suspend fun setCanComment(canComment: Boolean) {}
     override suspend fun setCurrent(performance: Performance, deadline: Date) {}
     override suspend fun sendAverageRating(performanceID: String, averageRating: Double) {}
+    override suspend fun publishRating(
+      performanceID: String,
+      juryNickname: String,
+      rating: Double
+    ) {
+    }
+
     override suspend fun publishComment(
       performanceID: String,
       juryNickname: String,
-      rating: Double,
       comment: String
     ) {
     }
@@ -155,9 +157,14 @@ fun StageService.PerformanceDashboard(
         }
         allRated = allRated && note?.report?.rating != null
         note?.report?.rating?.let { list.add(it) }
+        LaunchedEffect(note?.nickname, note?.report?.rating) {
+          note?.report?.rating?.let {
+            publishRating(performance.id, note!!.nickname, it)
+          }
+        }
         LaunchedEffect(note?.nickname, note?.report?.comment) {
           note?.report?.comment?.let {
-            publishComment(performance.id, note!!.nickname, note!!.report!!.rating, it)
+            publishComment(performance.id, note!!.nickname, it)
           }
         }
       }
