@@ -71,10 +71,12 @@ enum class Tabs {
 @Composable
 fun StagePreparationService.PerformanceList(startStage: () -> Unit) {
   var ready by rememberSaveable { mutableStateOf(false) }
-  LaunchedEffect(true) {
-    sendInvitations()
-    dropCurrent()
-    ready = true
+  if (!ready) {
+    LaunchedEffect(true) {
+      sendInvitations()
+      dropCurrent()
+      ready = true
+    }
   }
   val performances by performancesFlow.collectAsStateWithLifecycle(initialValue = listOf())
   val performanceIds = performances.map { it.id }.toSet()
