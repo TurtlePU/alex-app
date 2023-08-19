@@ -40,4 +40,5 @@
     <string name="id_header">№</string>
     <string name="degree_header">Степень</string>
     <string name="rating_header">Средняя оценка</string>
+    <string name="simplified">Упрощённая шкала</string>
 </resources>

@@ -34,7 +34,7 @@ import com.msys.alexapp.components.stage.cards.exampleReport
 import com.msys.alexapp.data.JuryReport
 import com.msys.alexapp.data.Performance
 import com.msys.alexapp.data.Summary.Companion.matching
-import com.msys.alexapp.data.defaultDegrees
+import com.msys.alexapp.data.standardDegrees
 import com.msys.alexapp.ui.theme.AlexAppTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -236,7 +236,7 @@ fun PerformanceDashboardPreview() {
           JuryNote(email, comment)
         }
       override val canCommentFlow: Flow<Boolean> get() = flowOf()
-      override val degreeFlow: Flow<SortedMap<Double, String>> get() = flowOf(defaultDegrees)
+      override val degreeFlow: Flow<SortedMap<Double, String>> get() = flowOf(standardDegrees)
       override val firstStagedPerformance: Flow<Pair<String, Performance>?>
         get() = flowOf(example.id to example)
       override val nextStagedPerformance: Flow<String?> get() = flowOf()

@@ -10,8 +10,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Modifier
@@ -20,10 +23,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msys.alexapp.R
 import com.msys.alexapp.components.admin.Card
-import com.msys.alexapp.components.admin.CommentBox
+import com.msys.alexapp.components.admin.NamedCheckBox
 import com.msys.alexapp.components.admin.Contact
 import com.msys.alexapp.components.admin.NewContact
-import com.msys.alexapp.data.defaultDegrees
+import com.msys.alexapp.data.simplifiedDegrees
+import com.msys.alexapp.data.standardDegrees
 import com.msys.alexapp.tasks.Task
 import com.msys.alexapp.tasks.TaskButton
 import com.msys.alexapp.tasks.dummyTask
@@ -72,8 +76,10 @@ fun AdminService.Admin(
   loadParticipants: @Composable () -> Task,
   saveResults: @Composable () -> Task,
 ) {
+  var canSendDegrees by rememberSaveable { mutableStateOf(false) }
   LaunchedEffect(true) {
-    sendDegrees(defaultDegrees)
+    sendDegrees(standardDegrees)
+    canSendDegrees = true
   }
   val scope = rememberCoroutineScope()
   Scaffold(
@@ -86,7 +92,17 @@ fun AdminService.Admin(
           options = loadParticipants(),
           text = stringResource(R.string.load_participants)
         )
-        CommentBox { scope.launch { setCanComment(it) } }
+        Column {
+          NamedCheckBox(stringResource(R.string.simplified), canSendDegrees) { isSimplified ->
+            scope.launch {
+              canSendDegrees = false
+              if (isSimplified) sendDegrees(simplifiedDegrees)
+              else sendDegrees(standardDegrees)
+              canSendDegrees = true
+            }
+          }
+          NamedCheckBox(stringResource(R.string.comments)) { scope.launch { setCanComment(it) } }
+        }
         TaskButton(
           options = saveResults(),
           text = stringResource(R.string.save_results),

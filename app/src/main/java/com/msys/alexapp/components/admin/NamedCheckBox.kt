@@ -14,22 +14,26 @@ import com.msys.alexapp.R
 import com.msys.alexapp.ui.theme.AlexAppTheme
 
 @Composable
-fun CommentBox(setCanComment: (Boolean) -> Unit) {
+fun NamedCheckBox(
+  text: String,
+  enabled: Boolean = true,
+  setFlag: (Boolean) -> Unit = {}) {
   Row {
-    var canComment by rememberSaveable { mutableStateOf(false) }
+    var flag by rememberSaveable { mutableStateOf(false) }
     Checkbox(
-      checked = canComment,
+      checked = flag,
       onCheckedChange = {
-        canComment = !canComment
-        setCanComment(canComment)
+        flag = !flag
+        setFlag(flag)
       },
+      enabled = enabled,
     )
-    Text(text = stringResource(R.string.comments))
+    Text(text)
   }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun CommentBoxPreview() {
-  AlexAppTheme { CommentBox { } }
+fun NamedCheckBoxPreview() {
+  AlexAppTheme { NamedCheckBox(stringResource(R.string.comments)) }
 }
